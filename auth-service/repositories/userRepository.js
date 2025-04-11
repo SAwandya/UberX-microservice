@@ -1,5 +1,6 @@
 const db = require("../config/database");
-const User = require("../models/user").default;
+const User = require("../models/user");
+const { convertDate } = require("../utils/dateUtils");
 
 exports.findByUsername = async (username) => {
   try {
@@ -42,11 +43,14 @@ exports.createUser = async (user) => {
   }
 };
 
-exports.saveRefreshToken = async (userId, tokenHash) => {
+exports.saveRefreshToken = async (userId, tokenHash, token, expire) => {
+  
+  const convertedexpire = convertDate(expire);
+
   try {
     await db.execute(
-      "INSERT INTO refresh_tokens (user_id, token_hash) VALUES (?, ?)",
-      [userId, tokenHash]
+      "INSERT INTO refresh_tokens (userId, token, token_hash, expires_at) VALUES (?, ?, ?, ?)",
+      [userId, tokenHash, token, convertedexpire]
     );
     return true;
   } catch (error) {

@@ -6,6 +6,8 @@ const {
   verifyRefreshToken,
   generateRefreshTokenHash,
 } = require("../utils/tokenUtils");
+const { REFRESH_TOKEN } = require("../config/jwt");
+
 
 exports.register = async (userData) => {
   // Check if user already exists
@@ -50,7 +52,12 @@ exports.login = async (username, password) => {
 
   // Store refresh token hash
   const refreshTokenHash = generateRefreshTokenHash(refreshToken);
-  await userRepository.saveRefreshToken(user.id, refreshTokenHash);
+  await userRepository.saveRefreshToken(
+    user.id,
+    refreshTokenHash,
+    refreshToken,
+    REFRESH_TOKEN.expiry
+  );
 
   return {
     user: {
