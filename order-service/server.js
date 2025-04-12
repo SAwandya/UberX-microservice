@@ -20,6 +20,13 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
+app.post('/api/orders', (req, res) => {
+  // Placeholder for order retrieval logic
+  console.log("Received request");
+  console.log("Headers:", req.headers); // ✅ add this
+  res.status(200).json({ message: "Orders retrieved successfully" });
+});
+
 
 // Start server
 app.listen(PORT, () => {
