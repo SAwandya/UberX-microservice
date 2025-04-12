@@ -1,0 +1,77 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - microservices-network
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=auth_db
+      - ACCESS_TOKEN_SECRET=your_access_token_secret
+      - ACCESS_TOKEN_EXPIRY=15m
+      - REFRESH_TOKEN_SECRET=your_refresh_token_secret
+      - REFRESH_TOKEN_EXPIRY=7d
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    networks:
+      - microservices-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      - NODE_ENV=development
+      - PORT=4001
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=auth_db
+    ports:
+      - "4001:4001"
+    depends_on:
+      - mysql
+      - auth-service
+    networks:
+      - microservices-network
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - order-service
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

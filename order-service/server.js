@@ -1,13 +1,11 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const authRoutes = require("./routes/authRoutes");
-const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4001;
 
-// Middleware
+// Middleware 
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -23,15 +21,9 @@ app.get('/health', (req, res) => {
 });
 
 
-// Routes
-app.use("/api/auth", authRoutes);
-
-// Error handler
-app.use(errorHandler);
-
 // Start server
 app.listen(PORT, () => {
-  console.log(`Authentication service running on port ${PORT}`);
+  console.log(`Order service running on port ${PORT}`);
 });
 
 module.exports = app;

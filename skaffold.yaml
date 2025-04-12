@@ -1,0 +1,85 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: uberX
+
+build:
+  local:
+    push: false
+  artifacts:
+    - image: sachilaawandya/auth-service
+      context: auth-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+          - src: '*.js'
+            dest: .
+          - src: 'controllers/**/*.js'
+            dest: .
+          - src: 'services/**/*.js'
+            dest: .
+          - src: 'repositories/**/*.js'
+            dest: .
+          - src: 'routes/**/*.js'
+            dest: .
+          - src: 'middleware/**/*.js'
+            dest: .
+          - src: 'utils/**/*.js'
+            dest: .
+          - src: 'config/**/*.js'
+            dest: .
+
+    - image: sachilaawandya/order-service
+      context: order-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+          - src: '*.js'
+            dest: .
+          - src: 'controllers/**/*.js'
+            dest: .
+          - src: 'services/**/*.js'
+            dest: .
+          - src: 'routes/**/*.js'
+            dest: .
+          - src: 'middleware/**/*.js'
+            dest: .
+
+    - image: sachilaawandya/nginx
+      context: nginx
+      docker:
+        dockerfile: Dockerfile
+
+manifests:
+  rawYaml:
+    - k8s/auth-service/*.yaml
+    - k8s/order-service/*.yaml
+    - k8s/nginx/*.yaml
+    - k8s/mysql/*.yaml
+
+deploy:
+  kubectl: 
+    defaultNamespace: uberx
+
+portForward:
+  - resourceType: service
+    resourceName: nginx
+    namespace: uberx
+    port: 80
+    localPort: 80
+  - resourceType: service
+    resourceName: auth-service
+    namespace: uberx
+    port: 3000
+    localPort: 3000
+  - resourceType: service
+    resourceName: order-service
+    namespace: uberx
+    port: 4001
+    localPort: 4001
