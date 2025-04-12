@@ -46,18 +46,19 @@ exports.login = async (req, res, next) => {
 };
 
 exports.validateToken = async (req, res) => {
- const token = req.headers.authorization?.split(" ")[1];
- if (!token) return res.sendStatus(401);
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.sendStatus(401);
 
- try {
-   const decoded = verifyAccessToken(token); // throws if invalid
-   console.log("Decoded token:", decoded); // ✅ add this for debugging
-   res.sendStatus(204); // ✅ VERY IMPORTANT: No body
- } catch (err) {
-   res.sendStatus(401);
- }
+  try {
+    const decoded = verifyAccessToken(token); // throws if invalid
+    console.log("Decoded token:", decoded); // ✅ add this for debugging
+    res.sendStatus(204); // ✅ VERY IMPORTANT: No body
+  } catch (err) {
+    res.sendStatus(401);
+  }
 
 };
+
 
 exports.refreshToken = async (req, res, next) => {
   try {
