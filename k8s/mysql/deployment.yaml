@@ -1,9 +1,8 @@
-# k8s/mysql/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
-  namespace: uberx
+  namespace: uberx  # Replace with your namespace
 spec:
   selector:
     matchLabels:
@@ -42,14 +41,12 @@ spec:
         volumeMounts:
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
-        resources:
-          limits:
-            cpu: "1"
-            memory: "1Gi"
-          requests:
-            cpu: "0.5"
-            memory: "512Mi"
+        - name: mysql-init-scripts
+          mountPath: /docker-entrypoint-initdb.d
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
           claimName: mysql-pv-claim
+      - name: mysql-init-scripts
+        configMap:
+          name: mysql-init-scripts
