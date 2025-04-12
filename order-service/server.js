@@ -17,17 +17,11 @@ app.use(
 
 // Log all incoming requests
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log('Headers:', JSON.stringify(req.headers));
-  if (req.body && Object.keys(req.body).length) {
-    console.log('Body:', JSON.stringify(req.body));
-  }
   next();
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  console.log('Health check received');
   res.status(200).send('OK');
 });
 
