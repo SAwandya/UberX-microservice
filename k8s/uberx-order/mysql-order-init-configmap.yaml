@@ -1,0 +1,72 @@
+# k8s/uberx-order/mysql-order-init-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-order-init-scripts
+  namespace: uberx-order # <--- UPDATED NAMESPACE
+data:
+  init_order.sql: |
+    CREATE DATABASE IF NOT EXISTS order_db;
+    USE order_db;
+    # ... (SQL for orders, order_items, payments, deliveries tables - see previous examples) ...
+
+    CREATE TABLE IF NOT EXISTS orders (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        customerId INT UNSIGNED NOT NULL,
+        restaurantId INT UNSIGNED NOT NULL,
+        riderId INT UNSIGNED NULL,
+        paymentId INT UNSIGNED NULL UNIQUE,
+        deliveryId INT UNSIGNED NULL UNIQUE,
+        orderPrepareTime DATETIME NULL,
+        totalBill DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        deliveryFee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS order_items (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        orderId INT UNSIGNED NOT NULL,
+        foodItemId INT UNSIGNED NOT NULL,
+        quantity INT UNSIGNED NOT NULL DEFAULT 1,
+        price DECIMAL(10, 2) NOT NULL,
+        FOREIGN KEY (orderId) REFERENCES orders(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        orderId INT UNSIGNED NOT NULL UNIQUE,
+        amount DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+        paymentMethod VARCHAR(50),
+        transactionId VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (orderId) REFERENCES orders(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS deliveries (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        orderId INT UNSIGNED NOT NULL UNIQUE,
+        assignedRiderId INT UNSIGNED NULL,
+        pickupAddress VARCHAR(255),
+        deliveryAddress VARCHAR(255) NOT NULL,
+        distance DECIMAL(10, 2) NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'PENDING_ASSIGNMENT',
+        picked_up_at TIMESTAMP NULL,
+        delivered_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (orderId) REFERENCES orders(id) ON DELETE CASCADE
+    );
+
+    -- Add indexes
+    ALTER TABLE orders ADD INDEX idx_customer (customerId);
+    ALTER TABLE orders ADD INDEX idx_restaurant (restaurantId);
+    ALTER TABLE orders ADD INDEX idx_rider (riderId);
+    ALTER TABLE orders ADD INDEX idx_status (status);
+    ALTER TABLE order_items ADD INDEX idx_fooditem (foodItemId);
+    ALTER TABLE payments ADD INDEX idx_status (status);
+    ALTER TABLE deliveries ADD INDEX idx_status (status);
+    ALTER TABLE deliveries ADD INDEX idx_assigned_rider (assignedRiderId);

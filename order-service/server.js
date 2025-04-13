@@ -68,6 +68,7 @@ app.get('/api/orders/:id', (req, res) => {
 // POST endpoint for creating orders
 app.post('/api/orders', (req, res) => {
   console.log("POST request received for /api/orders");
+  console.log("Authorization header:", req.header('Authorization'));
   try {
     const newOrder = {
       id: Math.floor(Math.random() * 1000),

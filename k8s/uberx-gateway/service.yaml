@@ -3,11 +3,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx
-  namespace: uberx
+  namespace: uberx-gateway # <--- UPDATED NAMESPACE
 spec:
   selector:
     app: nginx
   ports:
   - port: 80
     targetPort: 80
-  type: LoadBalancer
+  type: LoadBalancer # Keep LoadBalancer for external access

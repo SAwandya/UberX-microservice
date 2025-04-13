@@ -1,9 +1,9 @@
-# k8s/auth-service/service.yaml
+# k8s/uberx-auth/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: auth-service
-  namespace: uberx
+  namespace: uberx-auth # <--- Correct namespace
 spec:
   selector:
     app: auth-service

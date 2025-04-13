@@ -1,0 +1,15 @@
+# k8s/namespaces.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uberx-auth
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uberx-order
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uberx-gateway

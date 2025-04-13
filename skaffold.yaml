@@ -1,85 +1,133 @@
-apiVersion: skaffold/v4beta13
+apiVersion: skaffold/v4beta13 # Or a newer version if you prefer
 kind: Config
 metadata:
-  name: uberX
+  name: uberX-multi-namespace # Renamed for clarity
 
 build:
   local:
+    # Set push: true if you are using a remote cluster (like GKE, EKS, AKS)
+    # and need to push images to a registry (e.g., Docker Hub, GCR)
     push: false
   artifacts:
-    - image: sachilaawandya/auth-service
-      context: auth-service
+    # --- Auth Service ---
+    - image: thusalapi/auth-service # Your image name
+      context: auth-service       # Path to the service code
       docker:
-        dockerfile: Dockerfile
-      sync:
+        dockerfile: Dockerfile    # Dockerfile within the context path
+      sync: # Hot-reloading config for auth-service
         manual:
-          - src: 'src/**/*.js'
-            dest: .
-          - src: '*.js'
+          - src: 'config/**/*.js'
             dest: .
           - src: 'controllers/**/*.js'
             dest: .
-          - src: 'services/**/*.js'
+          - src: 'middlewares/**/*.js'
+            dest: .
+          - src: 'models/**/*.js'
             dest: .
           - src: 'repositories/**/*.js'
             dest: .
           - src: 'routes/**/*.js'
             dest: .
-          - src: 'middleware/**/*.js'
+          - src: 'services/**/*.js'
             dest: .
           - src: 'utils/**/*.js'
             dest: .
-          - src: 'config/**/*.js'
+          - src: '*.js' # Catches server.js etc. at the root
+            dest: .
+          - src: 'package*.json' # Sync package files if needed
             dest: .
 
-    - image: sachilaawandya/order-service
-      context: order-service
+    # --- Order Service ---
+    - image: thusalapi/order-service # Your image name
+      context: order-service        # Path to the service code
       docker:
-        dockerfile: Dockerfile
-      sync:
+        dockerfile: Dockerfile      # Dockerfile within the context path
+      sync: # Hot-reloading config for order-service
         manual:
-          - src: 'src/**/*.js'
-            dest: .
-          - src: '*.js'
+          # Add specific paths for order-service similar to auth-service
+          - src: 'config/**/*.js'
             dest: .
           - src: 'controllers/**/*.js'
             dest: .
-          - src: 'services/**/*.js'
+          - src: 'database/**/*.sql' # Sync schema if needed (though usually applied once)
+            dest: .
+          - src: 'middlewares/**/*.js'
+            dest: .
+          - src: 'models/**/*.js'
+            dest: .
+          - src: 'repositories/**/*.js'
             dest: .
           - src: 'routes/**/*.js'
             dest: .
-          - src: 'middleware/**/*.js'
+          - src: 'services/**/*.js'
             dest: .
-
-    - image: sachilaawandya/nginx
-      context: nginx
+          - src: 'utils/**/*.js'
+            dest: .
+          - src: '*.js' # Catches server.js etc. at the root
+            dest: .
+          - src: 'package*.json' # Sync package files if needed
+            dest: .
+    - image: thusalapi/nginx       # The custom image name you want to build
+      context: nginx             # The directory containing Dockerfile and nginx.conf
       docker:
-        dockerfile: Dockerfile
-
+        dockerfile: Dockerfile   # Assumes Dockerfile is named 'Dockerfile' in the nginx context
+      sync:
+        manual:
+          - src: 'nginx.conf'      # Sync the config file on changes
+            dest: /etc/nginx/conf.d/ # Destination inside the container
 manifests:
-  rawYaml:
-    - k8s/auth-service/*.yaml
-    - k8s/order-service/*.yaml
-    - k8s/nginx/*.yaml
-    - k8s/mysql/*.yaml
+ rawYaml:
+    - k8s/namespaces.yaml                # Create namespaces (auth, order, gateway)
+
+    # Deploy Auth related resources (including its DB and secrets)
+    - k8s/uberx-auth/mysql-auth-pv.yaml
+    - k8s/uberx-auth/mysql-credentials.yaml
+    - k8s/uberx-auth/jwt-secrets.yaml
+    - k8s/uberx-auth/mysql-auth-init-configmap.yaml
+    - k8s/uberx-auth/mysql-auth-deployment.yaml
+    - k8s/uberx-auth/mysql-auth-service.yaml
+    - k8s/uberx-auth/deployment.yaml
+    - k8s/uberx-auth/service.yaml
+
+    # Deploy Order related resources (including its DB and secret)
+    - k8s/uberx-order/mysql-order-pv.yaml
+    - k8s/uberx-order/mysql-order-credentials.yaml
+    - k8s/uberx-order/mysql-order-init-configmap.yaml
+    - k8s/uberx-order/mysql-order-deployment.yaml
+    - k8s/uberx-order/mysql-order-service.yaml
+    - k8s/uberx-order/deployment.yaml
+    - k8s/uberx-order/service.yaml
+
+    # Deploy Gateway resources
+    - k8s/uberx-gateway/deployment.yaml
+    - k8s/uberx-gateway/service.yaml
 
 deploy:
-  kubectl: 
-    defaultNamespace: uberx
+  kubectl: {} # No defaultNamespace needed, deploys based on manifest content
 
 portForward:
   - resourceType: service
     resourceName: nginx
-    namespace: uberx
+    namespace: uberx-gateway
     port: 80
     localPort: 80
   - resourceType: service
     resourceName: auth-service
-    namespace: uberx
+    namespace: uberx-auth
     port: 3000
     localPort: 3000
   - resourceType: service
     resourceName: order-service
-    namespace: uberx
+    namespace: uberx-order
     port: 4001
     localPort: 4001
+  - resourceType: service
+    resourceName: mysql-auth
+    namespace: uberx-auth    # <<< UPDATED NAMESPACE
+    port: 3306
+    localPort: 33060
+  - resourceType: service
+    resourceName: mysql-order
+    namespace: uberx-order     # <<< UPDATED NAMESPACE
+    port: 3306
+    localPort: 33061

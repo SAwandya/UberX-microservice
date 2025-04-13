@@ -1,9 +1,9 @@
-# k8s/order-service/deployment.yaml
+# k8s/uberx-order/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-service
-  namespace: uberx
+  namespace: uberx-order # <--- Correct namespace
   labels:
     app: order-service
 spec:
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: sachilaawandya/order-service:latest
+        image: thusalapi/order-service:latest
         ports:
         - containerPort: 4001
         env:
@@ -27,21 +27,25 @@ spec:
         - name: PORT
           value: "4001"
         - name: DB_HOST
-          value: "mysql"
+          # Connect to DB service in the same namespace
+          value: "mysql-order" # <--- UPDATED HOST
         - name: DB_PORT
           value: "3306"
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: mysql-credentials
+              # Secret is in the same namespace
+              name: mysql-order-credentials
               key: username
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-credentials
+              # Secret is in the same namespace
+              name: mysql-order-credentials
               key: password
         - name: DB_NAME
-          value: "auth_db"
+          value: "order_db"
+        # ... resources, probes ...
         resources:
           limits:
             cpu: "0.5"

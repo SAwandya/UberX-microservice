@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-auth # Service to expose the Auth DB within the cluster
+  namespace: uberx-auth
+spec:
+  selector:
+    app: mysql-auth # Selects pods labeled 'app: mysql-auth'
+  ports:
+  - port: 3306
+    targetPort: 3306
+  type: ClusterIP # Default type, suitable for internal cluster access
