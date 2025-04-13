@@ -50,6 +50,33 @@ build:
             dest: .
           - src: 'middleware/**/*.js'
             dest: .
+          - src: 'utils/**/*.js'
+            dest: .
+          - src: 'events/**/*.js'
+            dest: .
+
+    - image: sachilaawandya/delivery-service
+      context: delivery-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+          - src: '*.js'
+            dest: .
+          - src: 'controllers/**/*.js'
+            dest: .
+          - src: 'services/**/*.js'
+            dest: .
+          - src: 'routes/**/*.js'
+            dest: .
+          - src: 'middleware/**/*.js'
+            dest: .
+          - src: 'utils/**/*.js'
+            dest: .
+          - src: 'events/**/*.js'
+            dest: .
 
     - image: sachilaawandya/nginx
       context: nginx
@@ -60,8 +87,10 @@ manifests:
   rawYaml:
     - k8s/auth-service/*.yaml
     - k8s/order-service/*.yaml
+    - k8s/delivery-service/*.yaml
     - k8s/nginx/*.yaml
     - k8s/mysql/*.yaml
+    - k8s/nats/*.yaml
 
 deploy:
   kubectl: 
@@ -83,3 +112,13 @@ portForward:
     namespace: uberx
     port: 4001
     localPort: 4001
+  - resourceType: service
+    resourceName: delivery-service
+    namespace: uberx
+    port: 5000
+    localPort: 5000
+  - resourceType: service
+    resourceName: nats
+    namespace: uberx
+    port: 4222
+    localPort: 4222

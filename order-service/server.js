@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const orderEventPublisher = require("./events/publishers/orderEventPublisher");
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -66,25 +67,32 @@ app.get('/api/orders/:id', (req, res) => {
 });
 
 // POST endpoint for creating orders
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   console.log("POST request received for /api/orders");
   try {
-    const newOrder = {
+    // Your existing code to create an order
+    // const order = await orderService.createOrder(req.body);
+
+    const order = {
       id: Math.floor(Math.random() * 1000),
       ...req.body,
       status: "created",
+      customerId: "12345",
       createdAt: new Date().toISOString()
     };
 
+    // Publish the order created event
+    await orderEventPublisher.publishOrderCreated(order);
+
     res.status(201).json({
-      message: "Order created successfully",
-      order: newOrder
+      success: true,
+      data: order,
     });
   } catch (error) {
-    console.error("Error processing POST /api/orders:", error);
+    console.error("Error creating order:", error);
     res.status(500).json({
-      error: "Internal server error",
-      details: error.message
+      success: false,
+      error: "Failed to create order",
     });
   }
 });
