@@ -1,0 +1,57 @@
+# k8s/uberx-db/mysql-order-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-order # Deployment for the Order DB
+  namespace: uberx-order 
+  labels:
+    app: mysql-order
+spec:
+  replicas: 1 # Ensure only one replica when using ReadWriteOnce PVs
+  selector:
+    matchLabels:
+      app: mysql-order
+  strategy:
+    type: Recreate # Recreate strategy is safer for stateful apps like DBs with RWO volumes
+  template:
+    metadata:
+      labels:
+        app: mysql-order
+    spec:
+      containers:
+      - image: mysql:8.0
+        name: mysql-order # Container name
+        env:
+        # Use the separate secret for order DB credentials within this namespace
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-order-credentials
+              key: root-password
+        - name: MYSQL_DATABASE # Default database to create on startup
+          value: order_db
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-order-credentials
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-order-credentials
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-order-persistent-storage # Mount the persistent storage volume
+          mountPath: /var/lib/mysql
+        - name: mysql-order-init-scripts # Mount the initialization scripts volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-order-persistent-storage # Define the volume using the PVC
+        persistentVolumeClaim:
+          claimName: mysql-order-pv-claim # Reference the PVC for order DB
+      - name: mysql-order-init-scripts # Define the volume using the ConfigMap
+        configMap:
+          name: mysql-order-init-scripts # Reference the ConfigMap for order DB init scripts

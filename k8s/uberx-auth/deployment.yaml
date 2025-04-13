@@ -1,9 +1,9 @@
-# k8s/auth-service/deployment.yaml
+# k8s/uberx-auth/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service
-  namespace: uberx
+  namespace: uberx-auth # <--- Correct namespace
   labels:
     app: auth-service
 spec:
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: sachilaawandya/auth-service
+        image: thusalapi/auth-service
         ports:
         - containerPort: 3000
         env:
@@ -27,17 +27,20 @@ spec:
         - name: PORT
           value: "3000"
         - name: DB_HOST
-          value: "mysql"
+          # Connect to DB service in the same namespace
+          value: "mysql-auth" # <--- UPDATED HOST
         - name: DB_PORT
           value: "3306"
         - name: DB_USER
           valueFrom:
             secretKeyRef:
+              # Secret is in the same namespace
               name: mysql-credentials
               key: username
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
+              # Secret is in the same namespace
               name: mysql-credentials
               key: password
         - name: DB_NAME
@@ -45,6 +48,7 @@ spec:
         - name: ACCESS_TOKEN_SECRET
           valueFrom:
             secretKeyRef:
+              # Secret is in the same namespace
               name: jwt-secrets
               key: access-token-secret
         - name: ACCESS_TOKEN_EXPIRY
@@ -52,10 +56,12 @@ spec:
         - name: REFRESH_TOKEN_SECRET
           valueFrom:
             secretKeyRef:
+              # Secret is in the same namespace
               name: jwt-secrets
               key: refresh-token-secret
         - name: REFRESH_TOKEN_EXPIRY
           value: "7d"
+        # ... resources, probes ...
         resources:
           limits:
             cpu: "0.5"

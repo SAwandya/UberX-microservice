@@ -1,6 +1,6 @@
 const db = require("../config/database");
 const User = require("../models/user");
-const { convertDate } = require("../utils/dateUtils");
+const { convertDate } = require("../utils/dateUtils"); // Corrected typo: dataUtils -> dateUtils
 
 exports.findByUsername = async (username) => {
   try {
@@ -44,13 +44,13 @@ exports.createUser = async (user) => {
 };
 
 exports.saveRefreshToken = async (userId, tokenHash, token, expire) => {
-  
-  const convertedexpire = convertDate(expire);
+  const convertedexpire = convertDate(expire); // Pass the 'expire' variable
 
   try {
+    // FIX 2: Corrected the order of values to match INSERT columns
     await db.execute(
       "INSERT INTO refresh_tokens (userId, token, token_hash, expires_at) VALUES (?, ?, ?, ?)",
-      [userId, tokenHash, token, convertedexpire]
+      [userId, token, tokenHash, convertedexpire] // Swapped token and tokenHash
     );
     return true;
   } catch (error) {
@@ -60,8 +60,9 @@ exports.saveRefreshToken = async (userId, tokenHash, token, expire) => {
 
 exports.findRefreshToken = async (userId, tokenHash) => {
   try {
+    // FIX 1: Changed user_id to userId
     const [rows] = await db.execute(
-      "SELECT * FROM refresh_tokens WHERE user_id = ? AND token_hash = ?",
+      "SELECT * FROM refresh_tokens WHERE userId = ? AND token_hash = ?", // Corrected column name
       [userId, tokenHash]
     );
     return rows.length > 0 ? rows[0] : null;
@@ -72,8 +73,9 @@ exports.findRefreshToken = async (userId, tokenHash) => {
 
 exports.deleteRefreshToken = async (userId, tokenHash) => {
   try {
+    // FIX 1: Changed user_id to userId
     await db.execute(
-      "DELETE FROM refresh_tokens WHERE user_id = ? AND token_hash = ?",
+      "DELETE FROM refresh_tokens WHERE userId = ? AND token_hash = ?", // Corrected column name
       [userId, tokenHash]
     );
     return true;
@@ -84,7 +86,8 @@ exports.deleteRefreshToken = async (userId, tokenHash) => {
 
 exports.deleteAllRefreshTokens = async (userId) => {
   try {
-    await db.execute("DELETE FROM refresh_tokens WHERE user_id = ?", [userId]);
+    // FIX 1: Changed user_id to userId
+    await db.execute("DELETE FROM refresh_tokens WHERE userId = ?", [userId]); // Corrected column name
     return true;
   } catch (error) {
     throw new Error(`Database error: ${error.message}`);

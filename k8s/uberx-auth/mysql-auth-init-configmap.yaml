@@ -1,13 +1,14 @@
+# k8s/uberx-db/mysql-auth-init-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mysql-init-scripts
-  namespace: uberx  # Replace with your namespace
+  name: mysql-auth-init-scripts # ConfigMap holding init SQL for Auth DB
+  namespace: uberx-auth
 data:
-  init.sql: |
+  init_auth.sql: | # Script filename executed by mysql entrypoint
     CREATE DATABASE IF NOT EXISTS auth_db;
     USE auth_db;
-    
+
     CREATE TABLE IF NOT EXISTS users (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
@@ -15,17 +16,21 @@ data:
         password VARCHAR(255) NOT NULL,
         first_name VARCHAR(50),
         last_name VARCHAR(50),
+        -- Add other user fields from ERD if managed by auth service
+        -- role VARCHAR(20) DEFAULT 'customer',
+        -- address VARCHAR(255),
+        -- phone VARCHAR(20),
         is_active BOOLEAN DEFAULT TRUE,
         is_verified BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
-    
+
     CREATE TABLE IF NOT EXISTS refresh_tokens (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         userId INT UNSIGNED NOT NULL,
-        token VARCHAR(255),
-        token_hash VARCHAR(255) NOT NULL,
+        token VARCHAR(500), # Raw token (consider if needed)
+        token_hash VARCHAR(255) NOT NULL, # Hashed token for lookups
         expires_at TIMESTAMP NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

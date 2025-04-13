@@ -1,0 +1,35 @@
+# k8s/uberx-db/mysql-auth-pv.yaml
+
+# --- Persistent Volume for mysql-auth ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-auth-pv-volume
+  labels:
+    type: local
+    app: mysql-auth
+spec:
+  storageClassName: standard # Ensure this StorageClass exists
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    # IMPORTANT: Must exist on the node or use a provisioner
+    path: "/mnt/data-auth"
+
+---
+
+# --- Persistent Volume Claim for mysql-auth ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-auth-pv-claim
+  namespace: uberx-auth # PVC is namespaced
+spec:
+  storageClassName: standard # Must match PV
+  accessModes:
+    - ReadWriteOnce # Must match PV
+  resources:
+    requests:
+      storage: 5Gi # Request storage
