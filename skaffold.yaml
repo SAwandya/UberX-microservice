@@ -11,61 +11,61 @@ build:
   artifacts:
     # --- Auth Service ---
     - image: sachilaawandya/auth-service # Your image name
-      context: auth-service       # Path to the service code
+      context: auth-service # Path to the service code
       docker:
-        dockerfile: Dockerfile    # Dockerfile within the context path
+        dockerfile: Dockerfile # Dockerfile within the context path
       sync: # Hot-reloading config for auth-service
         manual:
-          - src: 'config/**/*.js'
+          - src: "config/**/*.js"
             dest: .
-          - src: 'controllers/**/*.js'
+          - src: "controllers/**/*.js"
             dest: .
-          - src: 'middlewares/**/*.js'
+          - src: "middlewares/**/*.js"
             dest: .
-          - src: 'models/**/*.js'
+          - src: "models/**/*.js"
             dest: .
-          - src: 'repositories/**/*.js'
+          - src: "repositories/**/*.js"
             dest: .
-          - src: 'routes/**/*.js'
+          - src: "routes/**/*.js"
             dest: .
-          - src: 'services/**/*.js'
+          - src: "services/**/*.js"
             dest: .
-          - src: 'utils/**/*.js'
+          - src: "utils/**/*.js"
             dest: .
-          - src: '*.js' # Catches server.js etc. at the root
+          - src: "*.js" # Catches server.js etc. at the root
             dest: .
-          - src: 'package*.json' # Sync package files if needed
+          - src: "package*.json" # Sync package files if needed
             dest: .
 
     # --- Order Service ---
     - image: sachilaawandya/order-service # Your image name
-      context: order-service        # Path to the service code
+      context: order-service # Path to the service code
       docker:
-        dockerfile: Dockerfile      # Dockerfile within the context path
+        dockerfile: Dockerfile # Dockerfile within the context path
       sync: # Hot-reloading config for order-service
         manual:
           # Add specific paths for order-service similar to auth-service
-          - src: 'config/**/*.js'
+          - src: "config/**/*.js"
             dest: .
-          - src: 'controllers/**/*.js'
+          - src: "controllers/**/*.js"
             dest: .
-          - src: 'database/**/*.sql' # Sync schema if needed (though usually applied once)
+          - src: "database/**/*.sql" # Sync schema if needed (though usually applied once)
             dest: .
-          - src: 'middlewares/**/*.js'
+          - src: "middlewares/**/*.js"
             dest: .
-          - src: 'models/**/*.js'
+          - src: "models/**/*.js"
             dest: .
-          - src: 'repositories/**/*.js'
+          - src: "repositories/**/*.js"
             dest: .
-          - src: 'routes/**/*.js'
+          - src: "routes/**/*.js"
             dest: .
-          - src: 'services/**/*.js'
+          - src: "services/**/*.js"
             dest: .
-          - src: 'utils/**/*.js'
+          - src: "utils/**/*.js"
             dest: .
-          - src: '*.js' # Catches server.js etc. at the root
+          - src: "*.js" # Catches server.js etc. at the root
             dest: .
-          - src: 'package*.json' # Sync package files if needed
+          - src: "package*.json" # Sync package files if needed
             dest: .
           - src: events.js/**/*.js # Sync events file if needed
             dest: .
@@ -76,34 +76,34 @@ build:
         dockerfile: Dockerfile
       sync:
         manual:
-          - src: 'src/**/*.js'
+          - src: "src/**/*.js"
             dest: .
-          - src: '*.js'
+          - src: "*.js"
             dest: .
-          - src: 'controllers/**/*.js'
+          - src: "controllers/**/*.js"
             dest: .
-          - src: 'services/**/*.js'
+          - src: "services/**/*.js"
             dest: .
-          - src: 'routes/**/*.js'
+          - src: "routes/**/*.js"
             dest: .
-          - src: 'middleware/**/*.js'
+          - src: "middleware/**/*.js"
             dest: .
-          - src: 'utils/**/*.js'
+          - src: "utils/**/*.js"
             dest: .
-          - src: 'events/**/*.js'
+          - src: "events/**/*.js"
             dest: .
 
-    - image: sachilaawandya/nginx       # The custom image name you want to build
-      context: nginx             # The directory containing Dockerfile and nginx.conf
+    - image: sachilaawandya/nginx # The custom image name you want to build
+      context: nginx # The directory containing Dockerfile and nginx.conf
       docker:
-        dockerfile: Dockerfile   # Assumes Dockerfile is named 'Dockerfile' in the nginx context
+        dockerfile: Dockerfile # Assumes Dockerfile is named 'Dockerfile' in the nginx context
       sync:
         manual:
-          - src: 'nginx.conf'      # Sync the config file on changes
+          - src: "nginx.conf" # Sync the config file on changes
             dest: /etc/nginx/conf.d/ # Destination inside the container
 manifests:
- rawYaml:
-    - k8s/namespaces.yaml                # Create namespaces (auth, order, gateway)
+  rawYaml:
+    - k8s/namespaces.yaml # Create namespaces (auth, order, gateway)
 
     # Deploy Auth related resources (including its DB and secrets)
     - k8s/uberx-auth/mysql-auth-pv.yaml
@@ -125,9 +125,22 @@ manifests:
     - k8s/uberx-order/service.yaml
     - k8s/uberx-order/jwt-secrets.yaml
 
+    # Deploy Order related resources (including its DB and secret)
+    - k8s/uberx-delivery/mysql-delivery-pv.yaml
+    - k8s/uberx-delivery/mysql-delivery-credentials.yaml
+    - k8s/uberx-delivery/mysql-delivery-init-configmap.yaml
+    - k8s/uberx-delivery/mysql-delivery-deployment.yaml
+    - k8s/uberx-delivery/mysql-delivery-service.yaml
+    - k8s/uberx-delivery/deployment.yaml
+    - k8s/uberx-delivery/service.yaml
+    - k8s/uberx-delivery/jwt-secrets.yaml
+
     # Deploy Gateway resources
     - k8s/uberx-gateway/deployment.yaml
     - k8s/uberx-gateway/service.yaml
+
+    # Deploy Gateway resources
+    - k8s/uberx-nats/deployment.yaml
 
 deploy:
   kubectl: {} # No defaultNamespace needed, deploys based on manifest content
@@ -150,16 +163,16 @@ portForward:
     localPort: 4001
   - resourceType: service
     resourceName: mysql-auth
-    namespace: uberx-auth    # <<< UPDATED NAMESPACE
+    namespace: uberx-auth # <<< UPDATED NAMESPACE
     port: 3306
     localPort: 33060
   - resourceType: service
     resourceName: mysql-order
-    namespace: uberx-order     # <<< UPDATED NAMESPACE
+    namespace: uberx-order # <<< UPDATED NAMESPACE
     port: 3306
     localPort: 33061
   - resourceType: service
     resourceName: nats
-    namespace: uberx
+    namespace: uberx-nats
     port: 4222
     localPort: 4222
