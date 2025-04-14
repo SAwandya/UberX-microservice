@@ -112,3 +112,83 @@ exports.findItemsByOrderId = async (orderId) => {
         throw new Error(`Database error finding order items: ${error.message}`);
     }
 };
+
+/**
+ * Finds the latest order for a customer.
+ * @param {number} customerId - The ID of the customer
+ * @returns {Promise<Order | null>} - The latest order or null if no orders found
+ */
+exports.findLatestOrderByCustomerId = async (customerId) => {
+    try {
+        const [rows] = await pool.execute(
+            "SELECT * FROM orders WHERE customerId = ? ORDER BY created_at DESC LIMIT 1",
+            [customerId]
+        );
+
+        if (rows.length === 0) return null;
+
+        const order = rows[0];
+        return new Order(
+            order.id, order.customerId, order.restaurantId, order.totalBill,
+            order.deliveryFee, order.status, order.orderPrepareTime, order.riderId,
+            order.paymentId, order.deliveryId, order.created_at, order.updated_at
+        );
+    } catch (error) {
+        console.error('Error finding latest order for customer:', error);
+        throw new Error(`Database error finding latest order: ${error.message}`);
+    }
+};
+
+/**
+ * Updates an order with the given data.
+ * @param {number} orderId - The ID of the order to update
+ * @param {object} updateData - The data to update the order with
+ * @returns {Promise<Order | null>} - The updated order or null if not found
+ */
+exports.updateOrder = async (orderId, updateData) => {
+    try {
+        const updateFields = [];
+        const values = [];
+
+        if (updateData.status !== undefined) {
+            updateFields.push('status = ?');
+            values.push(updateData.status);
+        }
+        if (updateData.deliveryFee !== undefined) {
+            updateFields.push('deliveryFee = ?');
+            values.push(updateData.deliveryFee);
+        }
+        if (updateData.riderId !== undefined) {
+            updateFields.push('riderId = ?');
+            values.push(updateData.riderId);
+        }
+        if (updateData.paymentId !== undefined) {
+            updateFields.push('paymentId = ?');
+            values.push(updateData.paymentId);
+        }
+        if (updateData.deliveryId !== undefined) {
+            updateFields.push('deliveryId = ?');
+            values.push(updateData.deliveryId);
+        }
+        if (updateData.orderPrepareTime !== undefined) {
+            updateFields.push('orderPrepareTime = ?');
+            values.push(updateData.orderPrepareTime);
+        }
+
+        if (updateFields.length === 0) {
+            return await exports.findOrderById(orderId);
+        }
+
+        values.push(orderId);
+
+        await pool.execute(
+            `UPDATE orders SET ${updateFields.join(', ')} WHERE id = ?`,
+            values
+        );
+
+        return await exports.findOrderById(orderId);
+    } catch (error) {
+        console.error('Error updating order:', error);
+        throw new Error(`Database error updating order: ${error.message}`);
+    }
+};

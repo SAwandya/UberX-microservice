@@ -72,3 +72,86 @@ exports.getOrderById = async (orderId) => {
         throw error;
     }
 }
+
+/**
+ * Gets the latest order for a customer.
+ * @param {number} customerId - The ID of the customer
+ * @returns {Promise<Object | null>} - The latest order with its items or null if no orders found
+ */
+exports.getLatestOrderForCustomer = async (customerId) => {
+    try {
+        const order = await orderRepository.findLatestOrderByCustomerId(customerId);
+        if (!order) {
+            return null;
+        }
+
+        const items = await orderRepository.findItemsByOrderId(order.id);
+        return { ...order, items };
+    } catch (error) {
+        console.error(`Error in orderService.getLatestOrderForCustomer for customer ${customerId}:`, error);
+        throw error;
+    }
+};
+
+
+/**
+ * Updates an existing order.
+ * @param {number} orderId - The ID of the order to update
+ * @param {object} updateData - The data to update in the order
+ * @param {number} [requesterId] - The ID of the user making the request (for authorization)
+ * @param {boolean} [isServiceUpdate=false] - Whether this is an internal service update
+ * @returns {Promise<Order|null>} - The updated order object or null if not found
+ */
+exports.updateOrder = async (orderId, updateData, requesterId, isServiceUpdate = false) => {
+    try {
+        const currentOrder = await orderRepository.findOrderById(orderId);
+        if (!currentOrder) {
+            return null;
+        }
+
+        if (!isServiceUpdate && currentOrder.customerId !== requesterId) {
+            // TODO: might check if requester is admin/restaurant/delivery staff
+            throw new Error('You do not have permission to update this order');
+        }
+
+        if (updateData.status && !isValidStatusTransition(currentOrder.status, updateData.status, isServiceUpdate)) {
+            throw new Error(`Invalid status transition from ${currentOrder.status} to ${updateData.status}`);
+        }
+
+        const updatedOrder = await orderRepository.updateOrder(orderId, updateData);
+
+        if (updatedOrder && updateData.status) {
+            console.log(`Order ${orderId} status changed from ${currentOrder.status} to ${updatedOrder.status}`);
+        }
+
+        return updatedOrder;
+    } catch (error) {
+        console.error(`Error in orderService.updateOrder for order ${orderId}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Validates if a status transition is allowed.
+ * @param {string} currentStatus - The current status of the order
+ * @param {string} newStatus - The new status to transition to
+ * @param {boolean} isServiceUpdate - Whether this is a service-level update
+ * @returns {boolean} - Whether the transition is valid
+ */
+const isValidStatusTransition = (currentStatus, newStatus, isServiceUpdate) => {
+    if (isServiceUpdate) return true;
+
+    const allowedTransitions = {
+        [ORDER_STATUS.PENDING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PREPARING, ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.PREPARING]: [ORDER_STATUS.READY_FOR_PICKUP, ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.READY_FOR_PICKUP]: [ORDER_STATUS.OUT_FOR_DELIVERY, ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.OUT_FOR_DELIVERY]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.FAILED],
+        // Terminal states
+        [ORDER_STATUS.DELIVERED]: [],
+        [ORDER_STATUS.CANCELLED]: [],
+        [ORDER_STATUS.FAILED]: []
+    };
+
+    return allowedTransitions[currentStatus]?.includes(newStatus) || false;
+};
