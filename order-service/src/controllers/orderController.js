@@ -107,3 +107,39 @@ exports.getOrderById = async (req, res, next) => {
     next(error); // Pass to error handler middleware
   }
 };
+
+/**
+ * Gets the latest order for the authenticated user.
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+exports.getLatestOrder = async (req, res, next) => {
+  try {
+    const customerId = req.user?.id;
+
+    if (!customerId) {
+      return res.status(401).json({
+        error: {
+          message: "Authentication required to retrieve order",
+          status: 401
+        }
+      });
+    }
+
+    const latestOrder = await orderService.getLatestOrderForCustomer(customerId);
+
+    if (!latestOrder) {
+      return res.status(404).json({
+        error: {
+          message: "No orders found for this user",
+          status: 404
+        }
+      });
+    }
+
+    res.status(200).json(latestOrder);
+  } catch (error) {
+    next(error);
+  }
+};

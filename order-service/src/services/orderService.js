@@ -72,3 +72,23 @@ exports.getOrderById = async (orderId) => {
         throw error;
     }
 }
+
+/**
+ * Gets the latest order for a customer.
+ * @param {number} customerId - The ID of the customer
+ * @returns {Promise<Object | null>} - The latest order with its items or null if no orders found
+ */
+exports.getLatestOrderForCustomer = async (customerId) => {
+    try {
+        const order = await orderRepository.findLatestOrderByCustomerId(customerId);
+        if (!order) {
+            return null;
+        }
+
+        const items = await orderRepository.findItemsByOrderId(order.id);
+        return { ...order, items };
+    } catch (error) {
+        console.error(`Error in orderService.getLatestOrderForCustomer for customer ${customerId}:`, error);
+        throw error;
+    }
+};

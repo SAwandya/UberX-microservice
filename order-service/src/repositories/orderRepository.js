@@ -112,3 +112,29 @@ exports.findItemsByOrderId = async (orderId) => {
         throw new Error(`Database error finding order items: ${error.message}`);
     }
 };
+
+/**
+ * Finds the latest order for a customer.
+ * @param {number} customerId - The ID of the customer
+ * @returns {Promise<Order | null>} - The latest order or null if no orders found
+ */
+exports.findLatestOrderByCustomerId = async (customerId) => {
+    try {
+        const [rows] = await pool.execute(
+            "SELECT * FROM orders WHERE customerId = ? ORDER BY created_at DESC LIMIT 1",
+            [customerId]
+        );
+
+        if (rows.length === 0) return null;
+
+        const order = rows[0];
+        return new Order(
+            order.id, order.customerId, order.restaurantId, order.totalBill,
+            order.deliveryFee, order.status, order.orderPrepareTime, order.riderId,
+            order.paymentId, order.deliveryId, order.created_at, order.updated_at
+        );
+    } catch (error) {
+        console.error('Error finding latest order for customer:', error);
+        throw new Error(`Database error finding latest order: ${error.message}`);
+    }
+};
