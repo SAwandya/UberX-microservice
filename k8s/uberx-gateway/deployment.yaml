@@ -19,7 +19,7 @@ spec:
       containers:
       - name: nginx
         # --- UPDATE THIS LINE ---
-        image: sachilaawandya/nginx # Use the custom image built by Skaffold
+        image: thusalapi/nginx # Use the custom image built by Skaffold
         # --- END UPDATE ---
         ports:
         - containerPort: 80

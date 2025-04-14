@@ -53,6 +53,8 @@ class OrderEventSubscriber {
       //   estimatedDeliveryTime: this.calculateEstimatedDeliveryTime(),
       // });
 
+
+
       console.log(`Created delivery for order ${order.id}`);
     } catch (error) {
       console.error(`Error processing new order ${order.id}:`, error);

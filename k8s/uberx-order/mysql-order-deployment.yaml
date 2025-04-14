@@ -1,18 +1,17 @@
-# k8s/uberx-db/mysql-order-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-order # Deployment for the Order DB
+  name: mysql-order
   namespace: uberx-order 
   labels:
     app: mysql-order
 spec:
-  replicas: 1 # Ensure only one replica when using ReadWriteOnce PVs
+  replicas: 1
   selector:
     matchLabels:
       app: mysql-order
   strategy:
-    type: Recreate # Recreate strategy is safer for stateful apps like DBs with RWO volumes
+    type: Recreate
   template:
     metadata:
       labels:
@@ -20,15 +19,14 @@ spec:
     spec:
       containers:
       - image: mysql:8.0
-        name: mysql-order # Container name
+        name: mysql-order
         env:
-        # Use the separate secret for order DB credentials within this namespace
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mysql-order-credentials
               key: root-password
-        - name: MYSQL_DATABASE # Default database to create on startup
+        - name: MYSQL_DATABASE
           value: order_db
         - name: MYSQL_USER
           valueFrom:
