@@ -1,0 +1,88 @@
+# k8s/delivery-service/mysql-delivery-init-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-delivery-init-scripts
+  namespace: uberx
+data:
+  init_delivery.sql: |
+    CREATE DATABASE IF NOT EXISTS delivery_db;
+    USE delivery_db;
+    
+    CREATE TABLE IF NOT EXISTS riders (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        userId INT UNSIGNED NOT NULL,
+        firstName VARCHAR(50) NOT NULL,
+        lastName VARCHAR(50) NOT NULL,
+        phoneNumber VARCHAR(20) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        vehicleType VARCHAR(50) NOT NULL,
+        vehicleNumber VARCHAR(20) NOT NULL,
+        licenseNumber VARCHAR(50) NOT NULL,
+        isActive BOOLEAN DEFAULT TRUE,
+        currentLatitude DECIMAL(10, 8) NULL,
+        currentLongitude DECIMAL(11, 8) NULL,
+        lastLocationUpdate TIMESTAMP NULL,
+        averageRating DECIMAL(3, 2) DEFAULT 0,
+        totalDeliveries INT UNSIGNED DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_email (email),
+        UNIQUE KEY unique_phone (phoneNumber)
+    );
+    
+    CREATE TABLE IF NOT EXISTS deliveries (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        orderId INT UNSIGNED NOT NULL,
+        riderId INT UNSIGNED NULL,
+        pickupAddress VARCHAR(255) NOT NULL,
+        pickupLatitude DECIMAL(10, 8) NULL,
+        pickupLongitude DECIMAL(11, 8) NULL,
+        deliveryAddress VARCHAR(255) NOT NULL,
+        deliveryLatitude DECIMAL(10, 8) NULL,
+        deliveryLongitude DECIMAL(11, 8) NULL,
+        distance DECIMAL(10, 2) NULL,
+        estimatedDeliveryTime TIMESTAMP NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'PENDING_ASSIGNMENT',
+        picked_up_at TIMESTAMP NULL,
+        delivered_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_order (orderId)
+    );
+    
+    CREATE TABLE IF NOT EXISTS delivery_status_history (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        deliveryId INT UNSIGNED NOT NULL,
+        status VARCHAR(50) NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        notes VARCHAR(255) NULL,
+        FOREIGN KEY (deliveryId) REFERENCES deliveries(id) ON DELETE CASCADE
+    );
+    
+    CREATE TABLE IF NOT EXISTS rider_locations (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        riderId INT UNSIGNED NOT NULL,
+        latitude DECIMAL(10, 8) NOT NULL,
+        longitude DECIMAL(11, 8) NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (riderId) REFERENCES riders(id) ON DELETE CASCADE
+    );
+    
+    CREATE TABLE IF NOT EXISTS rider_ratings (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        riderId INT UNSIGNED NOT NULL,
+        deliveryId INT UNSIGNED NOT NULL,
+        rating DECIMAL(3, 2) NOT NULL,
+        comment VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (riderId) REFERENCES riders(id) ON DELETE CASCADE,
+        FOREIGN KEY (deliveryId) REFERENCES deliveries(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_rating (riderId, deliveryId)
+    );
+    
+    -- Add indexes
+    ALTER TABLE deliveries ADD INDEX idx_status (status);
+    ALTER TABLE deliveries ADD INDEX idx_rider (riderId);
+    ALTER TABLE rider_locations ADD INDEX idx_timestamp (timestamp);
+    ALTER TABLE rider_locations ADD INDEX idx_rider_location (riderId, timestamp);

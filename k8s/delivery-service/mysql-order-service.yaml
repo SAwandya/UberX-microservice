@@ -1,0 +1,13 @@
+# k8s/uberx-order/mysql-order-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-delivery # Service for Order DB within the order namespace
+  namespace: uberx-delivery # <--- UPDATED NAMESPACE
+spec:
+  selector:
+    app: mysql-delivery
+  ports:
+  - port: 3306
+    targetPort: 3306
+  type: ClusterIP

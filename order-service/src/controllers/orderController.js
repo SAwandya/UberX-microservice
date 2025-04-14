@@ -9,42 +9,51 @@ const orderService = require('../services/orderService');
  */
 exports.createOrder = async (req, res, next) => {
     try {
-        // Get customer ID from the authenticated user
-        const customerId = req.user?.id;
+      // Get customer ID from the authenticated user
+      const customerId = req.user?.id;
 
-        if (!customerId) {
-            return res.status(401).json({
-                error: {
-                    message: 'Authentication required to create an order',
-                    status: 401
-                }
-            });
-        }
-
-        // Validate request body
-        const { restaurantId, items, deliveryFee } = req.body;
-
-        if (!restaurantId || !items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).json({
-                error: {
-                    message: 'Invalid order data. Required: restaurantId and items array',
-                    status: 400
-                }
-            });
-        }
-
-        // Create the order via service
-        const newOrder = await orderService.createOrder(customerId, {
-            restaurantId,
-            items,
-            deliveryFee
+      if (!customerId) {
+        return res.status(401).json({
+          error: {
+            message: "Authentication required to create an order",
+            status: 401,
+          },
         });
+      }
 
-        // Return success response
-        res.status(201).json({
-            message: 'Order created successfully',
-            order: newOrder
+      // Validate request body
+      const { restaurantId, items, deliveryFee } = req.body;
+
+      if (
+        !restaurantId ||
+        !items ||
+        !Array.isArray(items) ||
+        items.length === 0
+      ) {
+        return res.status(400).json({
+          error: {
+            message:
+              "Invalid order data. Required: restaurantId and items array",
+            status: 400,
+          },
         });
+      }
+
+      // Create the order via service
+      const newOrder = await orderService.createOrder(customerId, {
+        restaurantId,
+        items,
+        deliveryFee,
+      });
+
+      // Publish the order created event
+      await orderEventPublisher.publishOrderCreated(newOrder);
+
+      // Return success response
+      res.status(201).json({
+        message: "Order created successfully",
+        order: newOrder,
+      });
     } catch (error) {
         next(error); // Pass to error handler middleware
     }

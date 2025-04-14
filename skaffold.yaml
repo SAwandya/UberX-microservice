@@ -10,7 +10,7 @@ build:
     push: false
   artifacts:
     # --- Auth Service ---
-    - image: thusalapi/auth-service # Your image name
+    - image: sachilaawandya/auth-service # Your image name
       context: auth-service       # Path to the service code
       docker:
         dockerfile: Dockerfile    # Dockerfile within the context path
@@ -38,7 +38,7 @@ build:
             dest: .
 
     # --- Order Service ---
-    - image: thusalapi/order-service # Your image name
+    - image: sachilaawandya/order-service # Your image name
       context: order-service        # Path to the service code
       docker:
         dockerfile: Dockerfile      # Dockerfile within the context path
@@ -67,7 +67,33 @@ build:
             dest: .
           - src: 'package*.json' # Sync package files if needed
             dest: .
-    - image: thusalapi/nginx       # The custom image name you want to build
+          - src: events.js/**/*.js # Sync events file if needed
+            dest: .
+
+    - image: sachilaawandya/delivery-service
+      context: delivery-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+          - src: '*.js'
+            dest: .
+          - src: 'controllers/**/*.js'
+            dest: .
+          - src: 'services/**/*.js'
+            dest: .
+          - src: 'routes/**/*.js'
+            dest: .
+          - src: 'middleware/**/*.js'
+            dest: .
+          - src: 'utils/**/*.js'
+            dest: .
+          - src: 'events/**/*.js'
+            dest: .
+
+    - image: sachilaawandya/nginx       # The custom image name you want to build
       context: nginx             # The directory containing Dockerfile and nginx.conf
       docker:
         dockerfile: Dockerfile   # Assumes Dockerfile is named 'Dockerfile' in the nginx context
@@ -132,3 +158,8 @@ portForward:
     namespace: uberx-order     # <<< UPDATED NAMESPACE
     port: 3306
     localPort: 33061
+  - resourceType: service
+    resourceName: nats
+    namespace: uberx
+    port: 4222
+    localPort: 4222

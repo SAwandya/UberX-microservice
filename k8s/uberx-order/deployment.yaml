@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: thusalapi/order-service:latest
+        image: sachilaawandya/order-service:latest
         ports:
         - containerPort: 4001
         env:

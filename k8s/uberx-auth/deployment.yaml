@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: thusalapi/auth-service
+        image: sachilaawandya/auth-service
         ports:
         - containerPort: 3000
         env:
