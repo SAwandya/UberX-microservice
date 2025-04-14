@@ -18,10 +18,12 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: sachilaawandya/order-service:latest
+        image: thusalapi/order-service:latest
         ports:
         - containerPort: 4001
         env:
+        - name: NATS_URL
+          value: "nats://nats.uberx-nats.svc.cluster.local:4222"    
         - name: NODE_ENV
           value: "production"
         - name: PORT

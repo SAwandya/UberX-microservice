@@ -9,7 +9,7 @@ class OrderEventPublisher {
 
   async publishOrderCreated(order) {
     const eventData = {
-      eventType: "OrderCreated",           
+      eventType: "OrderCreated",
       order,
       timestamp: new Date().toISOString(),
     };

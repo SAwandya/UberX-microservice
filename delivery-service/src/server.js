@@ -5,7 +5,7 @@ const orderEventSubscriber = require("./events/subscribers/orderEventSubscriber"
 const natsConnectionManager = require("./utils/natsConnectionManager");
 
 const app = express();
-const PORT = process.env.PORT || 4002; // Default port changed for Delivery Service
+const PORT = process.env.PORT || 5000; // Changed to match your K8s deployment port
 
 // Middleware
 app.use(express.json());
@@ -110,33 +110,43 @@ app.use((req, res) => {
   });
 });
 
-//================ NATS RELATED ==================
-
-// Start the server
-app.listen(PORT, async () => {
+// Start the server - ONLY ONE app.listen CALL
+const server = app.listen(PORT, async () => {
   console.log(`Delivery service running on port ${PORT}`);
 
-  // Subscribe to order events
-  try {
-    await orderEventSubscriber.subscribeToEvents();
-    console.log("Successfully subscribed to order events");
-  } catch (error) {
-    console.error("Failed to subscribe to order events:", error);
-  }
+  // Try to connect to NATS with initial delay to ensure stability
+  setTimeout(async () => {
+    try {
+      // Connect to NATS before subscribing
+      await natsConnectionManager.connect();
+      console.log("Connected to NATS, subscribing to events...");
+
+      // Subscribe to order events after connection
+      await orderEventSubscriber.subscribeToEvents();
+      console.log("Successfully subscribed to order events");
+    } catch (error) {
+      console.error("Failed to connect to NATS or subscribe to events:", error);
+    }
+  }, 5000); // 5 second delay to allow network stability
 });
 
 // Handle graceful shutdown
 process.on("SIGINT", async () => {
   console.log("Shutting down delivery service...");
   await natsConnectionManager.disconnect();
-  process.exit(0);
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
 });
 
-//==================================================
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`Delivery service running on port ${PORT}`);
+process.on("SIGTERM", async () => {
+  console.log("Termination signal received, shutting down...");
+  await natsConnectionManager.disconnect();
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
 });
 
 module.exports = app;

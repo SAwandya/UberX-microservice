@@ -1,9 +1,8 @@
-# k8s/uberx-order/mysql-order-init-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-order-init-scripts
-  namespace: uberx-order # <--- UPDATED NAMESPACE
+  namespace: uberx-order
 data:
   init_order.sql: |
     CREATE DATABASE IF NOT EXISTS order_db;
