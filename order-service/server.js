@@ -1,116 +1,59 @@
+// order-service/server.js
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const orderRoutes = require('./src/routes/orderRoutes'); // Import the actual order routes
+const errorHandler = require('./src/middlewares/errorHandler'); // Import the centralized error handler
+require('./src/config/database'); // Initialize database connection pool (runs the code in database.js)
 
 const app = express();
 const PORT = process.env.PORT || 4001;
 
 // Middleware
-app.use(express.json());
-app.use(cookieParser());
+app.use(express.json()); // <-- Make sure this is before routes to parse JSON body
+app.use(cookieParser()); // Keep if needed, but auth primarily uses Bearer token now
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
-    credentials: true,
+    origin: process.env.CORS_ORIGIN || "*", // Adjust CORS for your frontend/clients
+    credentials: true, // Usually needed if frontend sends cookies/auth headers
   })
 );
 
-// Log all incoming requests
+// Log all incoming requests (optional for debugging)
 app.use((req, res, next) => {
+  console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
   next();
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  // You could enhance this later to check DB connectivity too
   res.status(200).send('OK');
 });
 
-// GET endpoint for orders list
-app.get('/api/orders', (req, res) => {
-  console.log("GET request received for /api/orders");
-  try {
-    res.status(200).json({
-      message: "Orders retrieved successfully",
-      orders: []
-    });
-  } catch (error) {
-    console.error("Error processing GET /api/orders:", error);
-    res.status(500).json({
-      error: "Internal server error",
-      details: error.message
-    });
-  }
-});
+// --- Mount API Routes ---
+// All routes defined in orderRoutes will be prefixed with /api/orders
+app.use('/api/orders', orderRoutes);
 
-// GET endpoint for specific order with ID parameter
-app.get('/api/orders/:id', (req, res) => {
-  const orderId = req.params.id;
-  console.log(`GET request received for specific order: ${orderId}`);
-  try {
-    res.status(200).json({
-      message: "Order retrieved successfully",
-      order: {
-        id: orderId,
-        status: "pending",
-        items: [],
-        createdAt: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    console.error(`Error processing GET /api/orders/${orderId}:`, error);
-    res.status(500).json({
-      error: "Internal server error",
-      details: error.message
-    });
-  }
-});
-
-// POST endpoint for creating orders
-app.post('/api/orders', (req, res) => {
-  console.log("POST request received for /api/orders");
-  console.log("Authorization header:", req.header('Authorization'));
-  try {
-    const newOrder = {
-      id: Math.floor(Math.random() * 1000),
-      ...req.body,
-      status: "created",
-      createdAt: new Date().toISOString()
-    };
-
-    res.status(201).json({
-      message: "Order created successfully",
-      order: newOrder
-    });
-  } catch (error) {
-    console.error("Error processing POST /api/orders:", error);
-    res.status(500).json({
-      error: "Internal server error",
-      details: error.message
-    });
-  }
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({
-    error: "Server Error",
-    message: err.message || "An unexpected error occurred"
-  });
-});
-
-// Handle 404s
-app.use((req, res) => {
+// --- Error Handling ---
+// Handle 404s - This should come *after* all valid routes
+app.use((req, res, next) => {
+  // No route matched the request
   console.log(`Route not found: ${req.method} ${req.url}`);
   res.status(404).json({
-    error: "Not Found",
-    message: "The requested resource was not found"
+    error: {
+      message: `Not Found - The requested resource ${req.originalUrl} does not exist`,
+      status: 404
+    }
   });
 });
+
+// Centralized error handler - This MUST be the last middleware defined
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Order service running on port ${PORT}`);
 });
 
-module.exports = app;
+module.exports = app; // Export for potential testing frameworks

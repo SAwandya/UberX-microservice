@@ -97,6 +97,7 @@ manifests:
     - k8s/uberx-order/mysql-order-service.yaml
     - k8s/uberx-order/deployment.yaml
     - k8s/uberx-order/service.yaml
+    - k8s/uberx-order/jwt-secrets.yaml
 
     # Deploy Gateway resources
     - k8s/uberx-gateway/deployment.yaml

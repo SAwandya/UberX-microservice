@@ -1,41 +1,18 @@
+// order-service/models/Order.js
 class Order {
-    constructor(
-        id,
-        userId,
-        status,
-        totalAmount,
-        deliveryAddress,
-        paymentMethod,
-        paymentStatus,
-        createdAt,
-        updatedAt,
-        items = []
-    ) {
+    constructor(id, customerId, restaurantId, totalBill, deliveryFee, status, orderPrepareTime = null, riderId = null, paymentId = null, deliveryId = null, createdAt = null, updatedAt = null) {
         this.id = id;
-        this.userId = userId;
+        this.customerId = customerId;
+        this.restaurantId = restaurantId;
+        this.totalBill = totalBill;
+        this.deliveryFee = deliveryFee;
         this.status = status;
-        this.totalAmount = totalAmount;
-        this.deliveryAddress = deliveryAddress;
-        this.paymentMethod = paymentMethod;
-        this.paymentStatus = paymentStatus;
+        this.orderPrepareTime = orderPrepareTime;
+        this.riderId = riderId;
+        this.paymentId = paymentId;
+        this.deliveryId = deliveryId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.items = items;
-    }
-
-    static fromDatabase(dbRow, items = []) {
-        return new Order(
-            dbRow.id,
-            dbRow.user_id,
-            dbRow.status,
-            dbRow.total_amount,
-            dbRow.delivery_address,
-            dbRow.payment_method,
-            dbRow.payment_status,
-            dbRow.created_at,
-            dbRow.updated_at,
-            items
-        );
     }
 }
 
