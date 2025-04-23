@@ -1,0 +1,1 @@
+const rs=require('express').Router(); const cRS=require('../controllers/restaurantScheduleController'); const {authenticate,authorizeRole}=require('../middlewares/authMiddleware'); rs.post('/',authenticate,authorizeRole('RestaurantAdmin'),cRS.add); rs.get('/',authenticate,authorizeRole('RestaurantAdmin'),cRS.getMine); module.exports=rs;

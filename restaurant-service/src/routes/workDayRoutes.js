@@ -1,0 +1,1 @@
+const wd=require('express').Router(); const cWD=require('../controllers/workDayController'); const {authenticate}=require('../middlewares/authMiddleware'); wd.get('/',authenticate,cWD.list); module.exports=wd;

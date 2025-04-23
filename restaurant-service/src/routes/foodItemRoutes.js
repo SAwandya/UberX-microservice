@@ -1,0 +1,2 @@
+const fi=require('express').Router(); const cFI=require('../controllers/foodItemController'); const {authenticate,authorizeRole}=require('../middlewares/authMiddleware'); fi.post('/',authenticate,authorizeRole('RestaurantAdmin'),cFI.add); fi.get('/',authenticate,authorizeRole('RestaurantAdmin'),cFI.list); fi.put('/:id',authenticate,authorizeRole('RestaurantAdmin'),cFI.update); fi.delete('/:id',authenticate,authorizeRole('RestaurantAdmin'),cFI.delete);
+module.exports=fi;

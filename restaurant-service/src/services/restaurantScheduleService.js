@@ -1,0 +1,1 @@
+const repoRS=require('../repositories/restaurantScheduleRepository'); exports.add=({rid,wd,wh})=>repoRS.create({restaurantId:rid,workDayId:wd,workHoursId:wh}); exports.getFor=(rid)=>repoRS.findByRestaurant(rid);

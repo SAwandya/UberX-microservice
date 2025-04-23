@@ -1,0 +1,3 @@
+const poolRS=require('../config/database'); const RestaurantSchedule=require('../models/RestaurantSchedule');
+exports.create=async({restaurantId,workDayId,workHoursId})=>{ const [r]=await poolRS.execute(`INSERT INTO restaurant_schedule (restaurantId,workDayId,workHoursId) VALUES (?,?,?)`,[restaurantId,workDayId,workHoursId]); return new RestaurantSchedule(r.insertId,restaurantId,workDayId,workHoursId); };
+exports.findByRestaurant=async(rid)=>{ const [rows]=await poolRS.execute(`SELECT * FROM restaurant_schedule WHERE restaurantId=?`,[rid]); return rows.map(r=>new RestaurantSchedule(r.id,r.restaurantId,r.workDayId,r.workHoursId)); };

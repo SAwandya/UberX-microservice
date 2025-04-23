@@ -1,0 +1,6 @@
+const RESTAURANT_STATUS = {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+  };
+  module.exports = { RESTAURANT_STATUS };
