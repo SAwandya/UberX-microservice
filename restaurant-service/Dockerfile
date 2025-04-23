@@ -1,4 +1,4 @@
-# order-service/Dockerfile
+# restaurant-service/Dockerfile
 FROM node:18-alpine
 
 WORKDIR /usr/src/app
@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 4001
+EXPOSE 3004
 
 # Command to run the application
 CMD ["node", "server.js"]
