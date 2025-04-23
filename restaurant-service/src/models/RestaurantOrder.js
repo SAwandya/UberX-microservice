@@ -1,0 +1,2 @@
+class RestaurantOrder { constructor(id, orderId, customerId, restaurantId, items, deliveryFee, status, createdAt) { this.id = id; this.orderId = orderId; this.customerId = customerId; this.restaurantId = restaurantId; this.items = items; this.deliveryFee = deliveryFee; this.status = status; this.createdAt = createdAt; } }
+module.exports = RestaurantOrder;

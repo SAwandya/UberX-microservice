@@ -1,0 +1,1 @@
+const orR=require('express').Router(); const cOR=require('../controllers/restaurantOrderController'); const {authenticate,authorizeRole}=require('../middlewares/authMiddleware'); orR.get('/',authenticate,authorizeRole('RestaurantAdmin'),cOR.list); module.exports=orR;
