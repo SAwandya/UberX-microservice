@@ -47,6 +47,10 @@ spec:
                   key: password
             - name: DB_NAME
               value: "delivery_service"
+            - name: REDIS_HOST
+              value: "redis-service" # Ensure this is set
+            - name: REDIS_PORT
+              value: "6379" # Ensure this is set
             - name: ACCESS_TOKEN_SECRET
               valueFrom:
                 secretKeyRef:

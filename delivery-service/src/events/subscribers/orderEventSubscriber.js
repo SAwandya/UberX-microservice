@@ -112,7 +112,7 @@ class OrderEventSubscriber {
             await natsConnectionManager.subscribe(this.SUBJECT_ORDER_UPDATED, async (eventData) => {
                 const { order } = eventData;
 
-                if (order.status === 'Confirmed') {
+                if (order.status === 'CONFIRMED') {
                     try {
                         // Placeholder coordinates; in a real app, fetch these from order/restaurant/customer data
                         const trip = await tripService.createTripFromOrder({

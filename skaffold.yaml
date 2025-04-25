@@ -125,7 +125,7 @@ manifests:
     - k8s/uberx-order/service.yaml
     - k8s/uberx-order/jwt-secrets.yaml
 
-    # Deploy Order related resources (including its DB and secret)
+    # Deploy Deivery related resources (including its DB and secret)
     - k8s/uberx-delivery/mysql-delivery-pv.yaml
     - k8s/uberx-delivery/mysql-delivery-credentials.yaml
     - k8s/uberx-delivery/mysql-delivery-init-configmap.yaml
@@ -134,6 +134,8 @@ manifests:
     - k8s/uberx-delivery/deployment.yaml
     - k8s/uberx-delivery/service.yaml
     - k8s/uberx-delivery/jwt-secrets.yaml
+    - k8s/uberx-delivery/redis-deployment.yaml
+    - k8s/uberx-delivery/redis-service.yaml
 
     # Deploy Gateway resources
     - k8s/uberx-gateway/deployment.yaml
