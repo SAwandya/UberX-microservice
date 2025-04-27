@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-payment
+  namespace: uberx-payment 
+  labels:
+    app: mysql-payment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-payment
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql-payment
+    spec:
+      containers:
+      - image: mysql:8.0
+        name: mysql-payment
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-payment-credentials
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: payment_db
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-payment-credentials
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-payment-credentials
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-payment-persistent-storage # Mount the persistent storage volume
+          mountPath: /var/lib/mysql
+        - name: mysql-payment-init-scripts # Mount the initialization scripts volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-payment-persistent-storage # Define the volume using the PVC
+        persistentVolumeClaim:
+          claimName: mysql-payment-pv-claim # Reference the PVC for order DB
+      - name: mysql-payment-init-scripts # Define the volume using the ConfigMap
+        configMap:
+          name: mysql-payment-init-scripts # Reference the ConfigMap for order DB init scripts

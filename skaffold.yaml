@@ -93,6 +93,29 @@ build:
           - src: "events/**/*.js"
             dest: .
 
+    - image: thusalapi/payment-service
+      context: payment-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.js"
+            dest: .
+          - src: "*.js"
+            dest: .
+          - src: "controllers/**/*.js"
+            dest: .
+          - src: "services/**/*.js"
+            dest: .
+          - src: "routes/**/*.js"
+            dest: .
+          - src: "middleware/**/*.js"
+            dest: .
+          - src: "utils/**/*.js"
+            dest: .
+          - src: "events/**/*.js"
+            dest: .
+
     - image: thusalapi/nginx # The custom image name you want to build
       context: nginx # The directory containing Dockerfile and nginx.conf
       docker:
@@ -125,7 +148,7 @@ manifests:
     - k8s/uberx-order/service.yaml
     - k8s/uberx-order/jwt-secrets.yaml
 
-    # Deploy Deivery related resources (including its DB and secret)
+    # Deploy delivery related resources (including its DB and secret)
     - k8s/uberx-delivery/mysql-delivery-pv.yaml
     - k8s/uberx-delivery/mysql-delivery-credentials.yaml
     - k8s/uberx-delivery/mysql-delivery-init-configmap.yaml
@@ -136,6 +159,16 @@ manifests:
     - k8s/uberx-delivery/jwt-secrets.yaml
     - k8s/uberx-delivery/redis-deployment.yaml
     - k8s/uberx-delivery/redis-service.yaml
+
+    # Deploy payment related resources (including its DB and secret)
+    - k8s/uberx-payment/mysql-payment-pv.yaml
+    - k8s/uberx-payment/mysql-payment-credentials.yaml
+    - k8s/uberx-payment/mysql-payment-init-configmap.yaml
+    - k8s/uberx-payment/mysql-payment-deployment.yaml
+    - k8s/uberx-payment/mysql-payment-service.yaml
+    - k8s/uberx-payment/deployment.yaml
+    - k8s/uberx-payment/service.yaml
+    - k8s/uberx-payment/jwt-secrets.yaml
 
     # Deploy Gateway resources
     - k8s/uberx-gateway/deployment.yaml
@@ -167,12 +200,22 @@ portForward:
     resourceName: mysql-auth
     namespace: uberx-auth # <<< UPDATED NAMESPACE
     port: 3306
-    localPort: 33060
+    localPort: 33063
+  - resourceType: service
+    resourceName: mysql-payment
+    namespace: uberx-payment # <<< UPDATED NAMESPACE
+    port: 3306
+    localPort: 33062
   - resourceType: service
     resourceName: mysql-order
     namespace: uberx-order # <<< UPDATED NAMESPACE
     port: 3306
     localPort: 33061
+  - resourceType: service
+    resourceName: payment-service
+    namespace: uberx-payment
+    port: 4006
+    localPort: 4006
   - resourceType: service
     resourceName: nats
     namespace: uberx-nats
