@@ -1,0 +1,35 @@
+# k8s/uberx-order/mysql-order-pv.yaml
+
+# --- Persistent Volume for mysql-order ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-payment-pv-volume
+  # No namespace for PV
+  labels:
+    type: local
+    app: mysql-payment
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data-payment" # Ensure this path exists and is unique
+
+---
+
+# --- Persistent Volume Claim for mysql-order ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-payment-pv-claim
+  namespace: uberx-payment # <--- UPDATED NAMESPACE (PVC is namespaced)
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
