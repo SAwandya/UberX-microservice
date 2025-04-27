@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
 const dbConfig = {
     host: process.env.DB_HOST || "localhost",
     user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "Awandya2000@",
+    password: process.env.DB_PASSWORD || "",
     database: process.env.DB_NAME || "payment_db",
     port: process.env.DB_PORT || 3306,
     waitForConnections: true,
@@ -24,10 +24,10 @@ const pool = mysql.createPool(dbConfig);
 async function testConnection() {
     try {
         const connection = await pool.getConnection();
-        console.log("Successfully connected to the Order database.");
+        console.log("Successfully connected to the payment database.");
         connection.release();
     } catch (err) {
-        console.error("Error connecting to the Order database:", err.message);
+        console.error("Error connecting to the payment database:", err.message);
         // Consider exiting if connection fails critically on startup
         // process.exit(1);
     }

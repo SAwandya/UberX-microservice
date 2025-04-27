@@ -17,6 +17,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: uberx-payment
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: uberx-nats
 ---
 apiVersion: v1

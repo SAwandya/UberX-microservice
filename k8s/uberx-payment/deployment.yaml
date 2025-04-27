@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: payment-service
-  namespace: uberx-payment # <--- Correct namespace
+  name: order-service
+  namespace: uberx-order # <--- Correct namespace
   labels:
-    app: payment-service
+    app: order-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: payment-service
+      app: order-service
   template:
     metadata:
       labels:
-        app: payment-service
+        app: order-service
     spec:
       containers:
-      - name: payment-service
-        image: thusalapi/payment-service:latest
+      - name: order-service
+        image: thusalapi/order-service:latest
         ports:
         - containerPort: 4001
         env:
@@ -27,26 +27,26 @@ spec:
         - name: NODE_ENV
           value: "production"
         - name: PORT
-          value: "4006"
+          value: "4001"
         - name: DB_HOST
           # Connect to DB service in the same namespace
-          value: "mysql-payment" # <--- UPDATED HOST
+          value: "mysql-order" # <--- UPDATED HOST
         - name: DB_PORT
           value: "3306"
         - name: DB_USER
           valueFrom:
             secretKeyRef:
               # Secret is in the same namespace
-              name: mysql-payment-credentials
+              name: mysql-order-credentials
               key: username
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               # Secret is in the same namespace
-              name: mysql-payment-credentials
+              name: mysql-order-credentials
               key: password
         - name: DB_NAME
-          value: "payment_db"
+          value: "order_db"
         - name: ACCESS_TOKEN_SECRET
           valueFrom:
             secretKeyRef:
@@ -63,12 +63,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 4006
+            port: 4001
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 4006
+            port: 4001
           initialDelaySeconds: 5
           periodSeconds: 5

@@ -1,0 +1,56 @@
+# k8s/mysql-payment-init-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-payment-init-scripts
+  namespace: uberx-payment
+data:
+  init_payment.sql: |
+    CREATE DATABASE IF NOT EXISTS payment_db;
+    USE payment_db;
+    
+    CREATE TABLE IF NOT EXISTS payments (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      orderId INT UNSIGNED NOT NULL,
+      stripePaymentIntentId VARCHAR(255) NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+      status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+      paymentMethod VARCHAR(50) DEFAULT 'CARD',
+      transactionId VARCHAR(255) NULL,
+      metadata JSON NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_order (orderId),
+      UNIQUE KEY unique_payment_intent (stripePaymentIntentId)
+    );
+    
+    CREATE TABLE IF NOT EXISTS payment_logs (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      paymentId INT UNSIGNED,
+      event VARCHAR(50) NOT NULL,
+      data JSON,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (paymentId) REFERENCES payments(id) ON DELETE SET NULL
+    );
+    
+    CREATE TABLE IF NOT EXISTS refunds (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      paymentId INT UNSIGNED NOT NULL,
+      stripeRefundId VARCHAR(255) NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+      reason VARCHAR(255) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (paymentId) REFERENCES payments(id) ON DELETE CASCADE,
+      UNIQUE KEY unique_refund (stripeRefundId)
+    );
+    
+    -- Add indexes
+    ALTER TABLE payments ADD INDEX idx_status (status);
+    ALTER TABLE payments ADD INDEX idx_created_at (created_at);
+    ALTER TABLE payment_logs ADD INDEX idx_event (event);
+    ALTER TABLE payment_logs ADD INDEX idx_created_at (created_at);
+    ALTER TABLE refunds ADD INDEX idx_status (status);
+    ALTER TABLE refunds ADD INDEX idx_created_at (created_at);
