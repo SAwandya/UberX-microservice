@@ -5,6 +5,6 @@ const riderController = require('../controllers/riderController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Route to create a new rider
-router.post('/', authMiddleware, riderController.createRider);
+router.post('/', riderController.createRider);
 
 module.exports = router;

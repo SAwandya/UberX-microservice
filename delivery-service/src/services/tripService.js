@@ -5,7 +5,7 @@ const { ORDER_SERVICE_URL } = require('../config/environment');
 
 exports.createTripFromOrder = async (orderData) => {
     try {
-        const { id: orderId, customerId, startLocation, endLocation } = orderData;
+        const { orderId, customerId, startLocation, endLocation } = orderData;
 
         // Fetch an available rider
         const rider = await riderRepository.findAvailableRider();

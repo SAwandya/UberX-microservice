@@ -200,7 +200,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/trips', tripRoutes);
 app.use('/api', locationRoutes);
-// app.use("/api/riders", riderRoutes);
+app.use("/api/riders", riderRoutes);
 
 // Error Handler
 app.use(errorHandler);
