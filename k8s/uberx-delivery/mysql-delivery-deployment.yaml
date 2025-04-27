@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql-delivery # Deployment for the Order DB
-  namespace: uberx-delivery 
+  namespace: uberx-delivery
   labels:
     app: mysql-delivery
 spec:
@@ -19,39 +19,39 @@ spec:
         app: mysql-delivery
     spec:
       containers:
-      - image: mysql:8.0
-        name: mysql-delivery # Container name
-        env:
-        # Use the separate secret for order DB credentials within this namespace
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-delivery-credentials
-              key: root-password
-        - name: MYSQL_DATABASE # Default database to create on startup
-          value: delivery_db
-        - name: MYSQL_USER
-          valueFrom:
-            secretKeyRef:
-              name: mysql-delivery-credentials
-              key: username
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-delivery-credentials
-              key: password
-        ports:
-        - containerPort: 3306
-          name: mysql
-        volumeMounts:
-        - name: mysql-delivery-persistent-storage # Mount the persistent storage volume
-          mountPath: /var/lib/mysql
-        - name: mysql-delivery-init-scripts # Mount the initialization scripts volume
-          mountPath: /docker-entrypoint-initdb.d
+        - image: mysql:8.0
+          name: mysql-delivery # Container name
+          env:
+            # Use the separate secret for order DB credentials within this namespace
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-delivery-credentials
+                  key: root-password
+            - name: MYSQL_DATABASE # Default database to create on startup
+              value: delivery_service
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-delivery-credentials
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-delivery-credentials
+                  key: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-delivery-persistent-storage # Mount the persistent storage volume
+              mountPath: /var/lib/mysql
+            - name: mysql-delivery-init-scripts # Mount the initialization scripts volume
+              mountPath: /docker-entrypoint-initdb.d
       volumes:
-      - name: mysql-delivery-persistent-storage # Define the volume using the PVC
-        persistentVolumeClaim:
-          claimName: mysql-delivery-pv-claim # Reference the PVC for order DB
-      - name: mysql-delivery-init-scripts # Define the volume using the ConfigMap
-        configMap:
-          name: mysql-delivery-init-scripts # Reference the ConfigMap for order DB init scripts
+        - name: mysql-delivery-persistent-storage # Define the volume using the PVC
+          persistentVolumeClaim:
+            claimName: mysql-delivery-pv-claim # Reference the PVC for order DB
+        - name: mysql-delivery-init-scripts # Define the volume using the ConfigMap
+          configMap:
+            name: mysql-delivery-init-scripts # Reference the ConfigMap for order DB init scripts

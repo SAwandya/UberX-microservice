@@ -157,6 +157,8 @@ manifests:
     - k8s/uberx-delivery/deployment.yaml
     - k8s/uberx-delivery/service.yaml
     - k8s/uberx-delivery/jwt-secrets.yaml
+    - k8s/uberx-delivery/redis-deployment.yaml
+    - k8s/uberx-delivery/redis-service.yaml
 
     # Deploy payment related resources (including its DB and secret)
     - k8s/uberx-payment/mysql-payment-pv.yaml
