@@ -61,3 +61,34 @@ exports.updateRiderAvailability = async (riderId, isAvailable) => {
         throw new Error(`Database error updating rider: ${error.message}`);
     }
 };
+
+exports.createRider = async (riderData) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [result] = await connection.query(
+            'INSERT INTO riders (name, isAvailable) VALUES (?, ?)',
+            [riderData.name, riderData.isAvailable]
+        );
+
+        const newRiderId = result.insertId;
+
+        await connection.commit();
+
+        return new Rider(
+            newRiderId,
+            riderData.name,
+            riderData.isAvailable,
+            new Date(),
+            new Date()
+        );
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error('Error creating rider:', error);
+        throw new Error(`Database error during rider creation: ${error.message}`);
+    } finally {
+        if (connection) connection.release();
+    }
+};

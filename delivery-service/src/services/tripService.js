@@ -5,7 +5,7 @@ const { ORDER_SERVICE_URL } = require('../config/environment');
 
 exports.createTripFromOrder = async (orderData) => {
     try {
-        const { id: orderId, customerId, startLocation, endLocation } = orderData;
+        const { orderId, customerId, startLocation, endLocation } = orderData;
 
         // Fetch an available rider
         const rider = await riderRepository.findAvailableRider();
@@ -22,11 +22,11 @@ exports.createTripFromOrder = async (orderData) => {
         const newTrip = await tripRepository.createTrip(tripData);
 
         // Update the order with the deliveryId (trip.id)
-        await axios.patch(
-            `${ORDER_SERVICE_URL}/api/orders/from-service/${orderId}`,
-            { deliveryId: newTrip.id },
-            { headers: { 'x-service-token': process.env.INTERNAL_SERVICE_TOKEN || '1234' } }
-        );
+        // await axios.patch(
+        //     `${ORDER_SERVICE_URL}/api/orders/from-service/${orderId}`,
+        //     { deliveryId: newTrip.id },
+        //     { headers: { 'x-service-token': process.env.INTERNAL_SERVICE_TOKEN || '1234' } }
+        // );
 
         return newTrip;
     } catch (error) {
@@ -59,3 +59,6 @@ exports.getTripById = async (tripId) => {
         throw new Error(`Failed to fetch trip: ${error.message}`);
     }
 };
+
+
+

@@ -160,6 +160,7 @@ const tripRoutes = require('./routes/tripRoutes');
 const locationRoutes = require('./routes/locationRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const orderEventSubscriber = require('./events/subscribers/orderEventSubscriber');
+const riderRoutes = require('./routes/riderRoutes');
 
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
@@ -199,6 +200,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/trips', tripRoutes);
 app.use('/api', locationRoutes);
+app.use("/api/riders", riderRoutes);
 
 // Error Handler
 app.use(errorHandler);
@@ -206,8 +208,8 @@ app.use(errorHandler);
 // Start the server and NATS subscriber
 const startServer = async () => {
     try {
-        await orderEventSubscriber.subscribe();
-        console.log('Successfully subscribed to NATS events');
+        // await orderEventSubscriber.subscribe();
+        // console.log('Successfully subscribed to NATS events');
 
         server.listen(PORT, () => {
             console.log(`Delivery Service running on port ${PORT}`);
