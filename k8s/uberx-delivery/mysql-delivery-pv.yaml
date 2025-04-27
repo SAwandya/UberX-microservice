@@ -16,7 +16,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/mnt/data-order" # Ensure this path exists and is unique
+    path: "/mnt/data-delivery" # Ensure this path exists and is unique
 
 ---
 

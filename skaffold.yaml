@@ -221,3 +221,13 @@ portForward:
     namespace: uberx-nats
     port: 4222
     localPort: 4222
+  - resourceType: service
+    resourceName: delivery-service
+    namespace: uberx-delivery
+    port: 5000
+    localPort: 5000
+  - resourceType: service
+    resourceName: mysql-delivery
+    namespace: uberx-delivery # <<< UPDATED NAMESPACE
+    port: 3306
+    localPort: 33064

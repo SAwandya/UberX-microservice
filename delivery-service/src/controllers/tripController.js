@@ -1,5 +1,31 @@
 const tripService = require('../services/tripService');
 
+exports.createTrip = async (req, res, next) => {
+    try {
+        const { orderId, customerId, startLocation, endLocation } = req.body;
+
+        if (!orderId || !customerId || !startLocation || !endLocation) {
+            return res.status(400).json({
+                error: { message: 'Missing required fields', status: 400 }
+            });
+        }
+
+        const tripData = {
+            orderId,
+            customerId,
+            startLocation,
+            endLocation
+        };
+
+        const newTrip = await tripService.createTripFromOrder(tripData);
+
+        res.status(201).json(newTrip);
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 exports.getTripById = async (req, res, next) => {
     try {
         const tripId = req.params.id;
