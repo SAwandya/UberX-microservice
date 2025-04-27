@@ -6,7 +6,7 @@ const cors = require("cors");
 const errorHandler = require("./src/middleware/errorHandler"); // Import the centralized error handler
 require("./src/config/database"); // Initialize database connection pool (runs the code in database.js)
 const paymentRoutes = require("./src/routes/paymentRoutes");
-
+const bodyParser = require("body-parser");
 
 const app = express();
 const PORT = process.env.PORT || 4006;
@@ -35,6 +35,9 @@ app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
+// Special middleware for Stripe webhooks
+app.use("/api/payments/webhook", bodyParser.raw({ type: "application/json" }));
+
 
 // Routes
 app.use("/api/payments", paymentRoutes);
@@ -58,7 +61,7 @@ app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Order service running on port ${PORT}`);
+  console.log(`Payment service running on port ${PORT}`);
 });
 
 module.exports = app; // Export for potential testing frameworks
