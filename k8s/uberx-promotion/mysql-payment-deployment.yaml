@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-promotion
+  namespace: uberx-promotion 
+  labels:
+    app: mysql-promotion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-promotion
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql-promotion
+    spec:
+      containers:
+      - image: mysql:8.0
+        name: mysql-promotion
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-promotion-credentials
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: promotion_db
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-promotion-credentials
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-promotion-credentials
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-promotion-persistent-storage # Mount the persistent storage volume
+          mountPath: /var/lib/mysql
+        - name: mysql-promotion-init-scripts # Mount the initialization scripts volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-promotion-persistent-storage # Define the volume using the PVC
+        persistentVolumeClaim:
+          claimName: mysql-promotion-pv-claim # Reference the PVC for order DB
+      - name: mysql-promotion-init-scripts # Define the volume using the ConfigMap
+        configMap:
+          name: mysql-promotion-init-scripts # Reference the ConfigMap for order DB init scripts

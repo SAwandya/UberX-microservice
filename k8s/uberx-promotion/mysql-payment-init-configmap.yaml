@@ -1,0 +1,37 @@
+# k8s/mysql-promotion-init-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-promotion-init-scripts
+  namespace: uberx-promotion
+data:
+  init_promotion.sql: |
+    CREATE DATABASE IF NOT EXISTS promotion_db;
+    USE promotion_db;
+
+    CREATE TABLE IF NOT EXISTS promotions (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      code VARCHAR(32) NOT NULL UNIQUE,
+      type ENUM('percentage', 'flat') NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      maxDiscount DECIMAL(10,2) DEFAULT NULL,
+      minOrderValue DECIMAL(10,2) DEFAULT 0,
+      startDate DATETIME NOT NULL,
+      endDate DATETIME NOT NULL,
+      usageLimit INT DEFAULT 0,
+      perUserLimit INT DEFAULT 1,
+      applicableRestaurants JSON DEFAULT NULL,
+      applicableUsers JSON DEFAULT NULL,
+      status ENUM('active', 'expired', 'inactive') DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS promo_redemptions (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      promoId INT UNSIGNED NOT NULL,
+      userId VARCHAR(64) NOT NULL,
+      orderId VARCHAR(64) NOT NULL,
+      redeemedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (promoId) REFERENCES promotions(id) ON DELETE CASCADE
+    );
