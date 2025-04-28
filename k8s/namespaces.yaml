@@ -22,6 +22,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: uberx-promotion
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: uberx-nats
 ---
 apiVersion: v1

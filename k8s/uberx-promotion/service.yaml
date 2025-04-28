@@ -1,0 +1,13 @@
+# k8s/order-service/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: promotion-service
+  namespace: uberx-promotion # <--- UPDATED NAMESPACE
+spec:
+  selector:
+    app: promotion-service
+  ports:
+  - port: 5001
+    targetPort: 5001
+  type: ClusterIP
