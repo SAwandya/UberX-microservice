@@ -1,4 +1,3 @@
-// src/models/promotionModel.js
 class Promotion {
   constructor(row) {
     this.id = row.id;

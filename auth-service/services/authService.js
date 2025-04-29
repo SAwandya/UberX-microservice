@@ -7,116 +7,108 @@ const {
   generateRefreshTokenHash,
 } = require("../utils/tokenUtils");
 const { REFRESH_TOKEN } = require("../config/jwt");
+const AuthServiceInterface = require("../interfaces/AuthServiceInterface");
 
+class AuthService extends AuthServiceInterface {
+  async register(userData) {
+    const existingUser = await userRepository.findByUsername(userData.username);
+    if (existingUser) {
+      throw new Error("Username already exists");
+    }
 
-exports.register = async (userData) => {
-  // Check if user already exists
-  const existingUser = await userRepository.findByUsername(userData.username);
-  if (existingUser) {
-    throw new Error("Username already exists");
-  }
+    const hashedPassword = await hashPassword(userData.password);
 
-  // Hash password
-  const hashedPassword = await hashPassword(userData.password);
+    const user = await userRepository.createUser({
+      username: userData.username,
+      email: userData.email,
+      password: hashedPassword,
+    });
 
-  // Create user
-  const user = await userRepository.createUser({
-    username: userData.username,
-    email: userData.email,
-    password: hashedPassword,
-  });
-
-  return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-  };
-};
-
-exports.login = async (username, password) => {
-  // Find user
-  const user = await userRepository.findByUsername(username);
-  if (!user) {
-    throw new Error("Invalid credentials");
-  }
-
-  // Verify password
-  const isPasswordValid = await comparePassword(password, user.password);
-  if (!isPasswordValid) {
-    throw new Error("Invalid credentials");
-  }
-
-  // Generate tokens
-  const accessToken = generateAccessToken(user.id);
-  const refreshToken = generateRefreshToken(user.id);
-
-  // Store refresh token hash
-  const refreshTokenHash = generateRefreshTokenHash(refreshToken);
-  await userRepository.saveRefreshToken(
-    user.id,
-    refreshTokenHash,
-    refreshToken,
-    REFRESH_TOKEN.expiry
-  );
-
-  return {
-    user: {
+    return {
       id: user.id,
       username: user.username,
       email: user.email,
-    },
-    tokens: {
-      accessToken,
+    };
+  }
+
+  async login(username, password) {
+    const user = await userRepository.findByUsername(username);
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+
+    const isPasswordValid = await comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Invalid credentials");
+    }
+
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
+    const refreshTokenHash = generateRefreshTokenHash(refreshToken);
+    await userRepository.saveRefreshToken(
+      user.id,
+      refreshTokenHash,
       refreshToken,
-    },
-  };
-};
+      REFRESH_TOKEN.expiry
+    );
 
-exports.refreshToken = async (refreshToken) => {
-  // Verify refresh token
-  const decoded = verifyRefreshToken(refreshToken);
-  if (!decoded) {
-    throw new Error("Invalid refresh token");
+    return {
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
+    };
   }
 
-  // Find user
-  const user = await userRepository.findById(decoded.userId);
-  if (!user) {
-    throw new Error("User not found");
+  async refreshToken(refreshToken) {
+    const decoded = verifyRefreshToken(refreshToken);
+    if (!decoded) {
+      throw new Error("Invalid refresh token");
+    }
+
+    const user = await userRepository.findById(decoded.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const refreshTokenHash = generateRefreshTokenHash(refreshToken);
+    const storedToken = await userRepository.findRefreshToken(
+      user.id,
+      refreshTokenHash
+    );
+    if (!storedToken) {
+      throw new Error("Invalid refresh token");
+    }
+
+    const newAccessToken = generateAccessToken(user.id);
+    const newRefreshToken = generateRefreshToken(user.id);
+
+    await userRepository.deleteRefreshToken(user.id, refreshTokenHash);
+    const newRefreshTokenHash = generateRefreshTokenHash(newRefreshToken);
+    await userRepository.saveRefreshToken(user.id, newRefreshTokenHash, newRefreshToken, REFRESH_TOKEN.expiry);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 
-  // Verify token exists in database
-  const refreshTokenHash = generateRefreshTokenHash(refreshToken);
-  const storedToken = await userRepository.findRefreshToken(
-    user.id,
-    refreshTokenHash
-  );
-  if (!storedToken) {
-    throw new Error("Invalid refresh token");
+  async logout(userId, refreshToken) {
+    if (!refreshToken) return true;
+
+    const refreshTokenHash = generateRefreshTokenHash(refreshToken);
+    return await userRepository.deleteRefreshToken(userId, refreshTokenHash);
   }
 
-  // Generate new tokens
-  const newAccessToken = generateAccessToken(user.id);
-  const newRefreshToken = generateRefreshToken(user.id);
+  async logoutAll(userId) {
+    return await userRepository.deleteAllRefreshTokens(userId);
+  }
+}
 
-  // Replace old refresh token with new one
-  await userRepository.deleteRefreshToken(user.id, refreshTokenHash);
-  const newRefreshTokenHash = generateRefreshTokenHash(newRefreshToken);
-  await userRepository.saveRefreshToken(user.id, newRefreshTokenHash);
-
-  return {
-    accessToken: newAccessToken,
-    refreshToken: newRefreshToken,
-  };
-};
-
-exports.logout = async (userId, refreshToken) => {
-  if (!refreshToken) return true;
-
-  const refreshTokenHash = generateRefreshTokenHash(refreshToken);
-  return await userRepository.deleteRefreshToken(userId, refreshTokenHash);
-};
-
-exports.logoutAll = async (userId) => {
-  return await userRepository.deleteAllRefreshTokens(userId);
-};
+module.exports = new AuthService();

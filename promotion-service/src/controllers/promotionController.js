@@ -1,4 +1,3 @@
-// src/controllers/promotionController.js
 const promotionService = require("../services/promotionService");
 
 exports.validatePromotion = async (req, res) => {

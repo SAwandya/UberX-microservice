@@ -1,6 +1,28 @@
 const repo = require('../repositories/restaurantRepository');
-exports.register = async(ownerId,payload) => repo.create({ownerId,...payload});
-exports.getMine = async(ownerId) => repo.findByOwner(ownerId);
-exports.approve = async(id) => repo.updateStatus(id, require('../utils/constants').RESTAURANT_STATUS.APPROVED);
-exports.update = async(id,data)=>repo.update(id,data);
-exports.delete = async(id)=>repo.delete(id);
+const RestaurantServiceInterface = require('../interfaces/RestaurantServiceInterface');
+const { RESTAURANT_STATUS } = require('../utils/constants');
+
+class RestaurantService extends RestaurantServiceInterface {
+    async register(ownerId, payload) {
+        return repo.create({ ownerId, ...payload });
+    }
+
+    async getMine(ownerId) {
+        return repo.findByOwner(ownerId);
+    }
+
+    async approve(id) {
+        return repo.updateStatus(id, RESTAURANT_STATUS.APPROVED);
+    }
+
+    async update(id, data) {
+        return repo.update(id, data);
+    }
+
+    async delete(id) {
+        await repo.delete(id);
+        return true;
+    }
+}
+
+module.exports = new RestaurantService();

@@ -1,4 +1,3 @@
-// src/repositories/promotionRepository.js
 const { initDB } = require("../utils/db");
 const { Promotion } = require("../models/promotionModel");
 

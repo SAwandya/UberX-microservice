@@ -1,4 +1,3 @@
-// order-service/models/Order.js
 class Order {
     constructor(id, customerId, restaurantId, totalBill, deliveryFee, status, orderPrepareTime = null, riderId = null, paymentId = null, deliveryId = null, createdAt = null, updatedAt = null) {
         this.id = id;

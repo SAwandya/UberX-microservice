@@ -1,7 +1,7 @@
-// src/services/promotionService.js
 const promotionRepo = require("../repositories/promotionRepository");
+const PromotionServiceInterface = require("../interfaces/PromotionServiceInterface");
 
-class PromotionService {
+class PromotionService extends PromotionServiceInterface {
   async validatePromotion({ code, userId, restaurantId, cartTotal }) {
     const promo = await promotionRepo.findByCode(code);
     if (!promo) return { valid: false, message: "Promo code not found" };
@@ -52,7 +52,6 @@ class PromotionService {
       return { valid: false, message: "You have already used this promo" };
     }
 
-    // Calculate discount
     let discount = 0;
     if (promo.type === "percentage") {
       discount = (cartTotal * promo.amount) / 100;
