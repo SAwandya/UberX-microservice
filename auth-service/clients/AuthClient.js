@@ -1,9 +1,6 @@
 const axios = require('axios');
 const AuthClientInterface = require('../interfaces/AuthClientInterface');
 
-/**
- * Implementation of AuthClientInterface for service-to-service communication
- */
 class AuthClient extends AuthClientInterface {
     constructor() {
         super();
@@ -11,11 +8,6 @@ class AuthClient extends AuthClientInterface {
         this.serviceToken = process.env.INTERNAL_SERVICE_TOKEN || 'internal-service-token';
     }
 
-    /**
-     * Sets up common headers for service-to-service communication
-     * @returns {Object} - Headers object
-     * @private
-     */
     _getHeaders() {
         return {
             'Content-Type': 'application/json',
@@ -23,11 +15,6 @@ class AuthClient extends AuthClientInterface {
         };
     }
 
-    /**
-     * Validates a token
-     * @param {string} token - The JWT token to validate
-     * @returns {Promise<Object>} - Token validation result
-     */
     async validateToken(token) {
         try {
             const response = await axios.post(
@@ -42,11 +29,6 @@ class AuthClient extends AuthClientInterface {
         }
     }
 
-    /**
-     * Gets user information
-     * @param {number} userId - The user ID
-     * @returns {Promise<Object>} - User details (excluding sensitive info)
-     */
     async getUser(userId) {
         try {
             const response = await axios.get(
@@ -60,12 +42,6 @@ class AuthClient extends AuthClientInterface {
         }
     }
 
-    /**
-     * Checks if a user has a specific role
-     * @param {number} userId - The user ID
-     * @param {string} role - The role to check
-     * @returns {Promise<boolean>} - Whether the user has the role
-     */
     async hasRole(userId, role) {
         try {
             const response = await axios.post(

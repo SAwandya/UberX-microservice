@@ -20,7 +20,6 @@ console.log(`Order Service DB Config: Host=${dbConfig.host}, DB=${dbConfig.datab
 
 const pool = mysql.createPool(dbConfig);
 
-// Optional: Test connection on startup (can add retry logic)
 async function testConnection() {
     try {
         const connection = await pool.getConnection();
@@ -28,8 +27,6 @@ async function testConnection() {
         connection.release();
     } catch (err) {
         console.error("Error connecting to the Order database:", err.message);
-        // Consider exiting if connection fails critically on startup
-        // process.exit(1);
     }
 }
 

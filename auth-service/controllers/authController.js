@@ -28,12 +28,11 @@ exports.login = async (req, res, next) => {
 
     const result = await authService.login(username, password);
 
-    // Set refresh token as HTTP-only cookie
     res.cookie("refreshToken", result.tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({
@@ -50,15 +49,13 @@ exports.validateToken = async (req, res) => {
   if (!token) return res.sendStatus(401);
 
   try {
-    const decoded = verifyAccessToken(token); // throws if invalid
-    console.log("Decoded token:", decoded); // ✅ add this for debugging
-    res.sendStatus(204); // ✅ VERY IMPORTANT: No body
+    const decoded = verifyAccessToken(token);
+    console.log("Decoded token:", decoded);
+    res.sendStatus(204);
   } catch (err) {
     res.sendStatus(401);
   }
-
 };
-
 
 exports.refreshToken = async (req, res, next) => {
   try {
@@ -70,12 +67,11 @@ exports.refreshToken = async (req, res, next) => {
 
     const tokens = await authService.refreshToken(refreshToken);
 
-    // Set new refresh token as HTTP-only cookie
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({ accessToken: tokens.accessToken });
@@ -92,7 +88,6 @@ exports.logout = async (req, res, next) => {
       await authService.logout(req.user.id, refreshToken);
     }
 
-    // Clear refresh token cookie
     res.clearCookie("refreshToken");
 
     res.json({ message: "Logged out successfully" });
@@ -109,7 +104,6 @@ exports.logoutAll = async (req, res, next) => {
 
     await authService.logoutAll(req.user.id);
 
-    // Clear refresh token cookie
     res.clearCookie("refreshToken");
 
     res.json({ message: "Logged out from all devices successfully" });

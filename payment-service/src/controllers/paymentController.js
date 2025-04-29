@@ -1,4 +1,3 @@
-// src/controllers/paymentController.js
 const paymentService = require("../services/paymentService");
 const stripe = require("stripe")(require("../config/environment").STRIPE_SECRET_KEY);
 const env = require("../config/environment");

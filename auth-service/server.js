@@ -7,7 +7,6 @@ const errorHandler = require("./middlewares/errorHandler");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -17,19 +16,14 @@ app.use(
   })
 );
 
-// Assuming Express
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-
-// Routes
 app.use("/api/auth", authRoutes);
 
-// Error handler
 app.use(errorHandler);
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Authentication service running on port ${PORT}`);
 });

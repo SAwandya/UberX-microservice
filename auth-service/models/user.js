@@ -4,7 +4,7 @@ class User {
     this.username = username;
     this.email = email;
     this.password = password;
-    this.tokens = tokens; // Array to store refresh token hashes
+    this.tokens = tokens;
   }
 }
 
